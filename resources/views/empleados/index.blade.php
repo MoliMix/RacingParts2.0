@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -27,19 +26,57 @@
         tr:hover {
             background-color: #333;
         }
+        .alert {
+            margin-bottom: 1rem;
+            border: none;
+            border-radius: 8px;
+        }
+        .alert-success {
+            background-color: #28a745;
+            color: #fff;
+        }
+        .alert-danger {
+            background-color: #dc3545;
+            color: #fff;
+        }
+        .alert-info {
+            background-color: #17a2b8;
+            color: #fff;
+        }
+        .btn-close {
+            filter: brightness(0) invert(1);
+        }
     </style>
 </head>
 <body>
 <div class="container py-5">
     <div class="table-container">
-        <h2 class="mb-4">Lista de Empleados</h2>
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="mb-0">Lista de Empleados</h2>
+            <span class="text-muted">Total: <strong>{{ $empleados->total() }}</strong></span>
+        </div>
+
+        {{-- Mensajes de éxito y error --}}
+        @if(session('success'))
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                {{ session('success') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        @endif
+
+        @if(session('error'))
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                {{ session('error') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        @endif
 
         <a href="{{ route('empleados.create') }}" class="btn btn-primary mb-3">+ Nuevo Empleado</a>
 
         <!-- Búsqueda -->
         <form action="{{ route('empleados.index') }}" method="GET" class="mb-3">
             <div class="input-group">
-                <input type="text" name="search" class="form-control" placeholder="Buscar empleado..." value="{{ request('search') }}">
+                <input type="text" name="search" class="form-control" placeholder="Buscar empleado por Nombre, Apellido o Identidad" value="{{ request('search') }}">
                 <button type="submit" class="btn btn-primary">Buscar</button>
             </div>
         </form>
@@ -48,6 +85,7 @@
             <table class="table table-dark table-striped table-hover text-center align-middle">
                 <thead>
                     <tr>
+                        <th>#</th>
                         <th>Nombre</th>
                         <th>Apellido</th>
                         <th>Identidad</th>
@@ -57,6 +95,7 @@
                 <tbody>
                     @forelse ($empleados as $empleado)
                         <tr>
+                            <td>{{ $loop->iteration + ($empleados->currentPage() - 1) * $empleados->perPage() }}</td>
                             <td>{{ $empleado->nombre }}</td>
                             <td>{{ $empleado->apellido }}</td>
                             <td>{{ $empleado->identidad }}</td>
@@ -66,7 +105,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="4">No hay empleados registrados.</td>
+                            <td colspan="5">No hay empleados registrados.</td>
                         </tr>
                     @endforelse
                 </tbody>

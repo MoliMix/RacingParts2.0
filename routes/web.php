@@ -1,6 +1,8 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\EmpleadoController;
+use App\Http\Controllers\ProveedorController;
 
 /*
 |--------------------------------------------------------------------------
@@ -17,15 +19,13 @@ Route::get('/', function () {
     return view('welcome');
 })->name('welcome');
 
-use App\Http\Controllers\EmpleadoController;
+Route::get('/empleados/menu', function () {
+    return view('empleados.menu');
+})->name('empleados.menu');
 
-Route::get('/empleados/crear', [EmpleadoController::class, 'create'])->name('empleados.create');
-Route::post('/empleados', [EmpleadoController::class, 'store'])->name('empleados.store');
+Route::get('/proveedores/menu', function () {
+    return view('proveedores.menu');
+})->name('proveedores.menu');
 
-Route::get('/empleados', [EmpleadoController::class, 'index'])->name('empleados.index');
-
-Route::get('/empleados/{empleado}/editar', [EmpleadoController::class, 'edit'])->name('empleados.edit');
-
-Route::put('/empleados/{empleado}', [EmpleadoController::class, 'update'])->name('empleados.update');
-
-Route::get('/empleados/{empleado}', [EmpleadoController::class, 'show'])->name('empleados.show');
+Route::resource('empleados', EmpleadoController::class);
+Route::resource('proveedores', ProveedorController::class);
