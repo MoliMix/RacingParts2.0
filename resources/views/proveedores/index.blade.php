@@ -64,11 +64,19 @@
     </table>
 </div>
 
-{{ $proveedores->withQueryString()->links() }}
+---
+
+{{-- Paginación bonita y centrada (usa la vista personalizada que definimos) --}}
+<div class="d-flex justify-content-center mt-4 mb-4">
+    {{ $proveedores->withQueryString()->links('vendor.pagination.bootstrap-5') }} {{-- Asegúrate de usar 'bootstrap-5' o el nombre de tu archivo personalizado --}}
+</div>
+
+---
 
 <a href="{{ route('welcome') }}" class="btn btn-outline-light mt-3">Inicio</a>
 
 <style>
+    /* Estilos para el campo de búsqueda */
     .search-input::placeholder {
         color: #ffffff !important;
         opacity: 0.7;
@@ -84,5 +92,88 @@
         border-color: #0d6efd !important;
         box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25) !important;
     }
+
+    /* Estilos para la paginación personalizada (NUEVOS ESTILOS) */
+    .pagination-custom {
+        display: flex;
+        padding-left: 0;
+        border-radius: 0.25rem;
+    }
+
+    .pagination-custom li {
+        margin: 0 4px;
+        list-style: none; /* Asegura que no haya viñetas de lista */
+    }
+
+    .page-link-custom {
+        position: relative;
+        display: block;
+        padding: 0.5rem 0.75rem;
+        color: #0d6efd;
+        background-color: #343a40;
+        border: 1px solid #454d55;
+        border-radius: 0.25rem;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        font-weight: 500; /* Un poco más de grosor en el texto */
+    }
+
+    .page-link-custom:hover {
+        color: #ffffff;
+        background-color: #0d6efd;
+        border-color: #0d6efd;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(13, 110, 253, 0.2); /* Sombra sutil al pasar el ratón */
+    }
+
+    .page-link-custom.active,
+    .pagination-custom li.active .page-link-custom {
+        color: #ffffff;
+        background-color: #0d6efd;
+        border-color: #0d6efd;
+        font-weight: bold; /* Más énfasis en la página activa */
+    }
+
+    .pagination-custom li.disabled .page-link-custom {
+        color: #6c757d;
+        background-color: #343a40;
+        border-color: #454d55;
+        cursor: not-allowed;
+        opacity: 0.6;
+        transform: none;
+        box-shadow: none;
+    }
+
+    /* Estilos para el texto de resumen */
+    .text-sm.text-gray-700.leading-5.text-muted {
+        color: #ced4da !important;
+        font-size: 0.875rem;
+        align-self: center; /* Alinea el texto verticalmente en el centro */
+    }
+
+    /* Estilo para los botones de paginación en móviles */
+    .btn-dark-outline {
+        color: #ced4da;
+        border-color: #495057;
+        background-color: #343a40;
+        text-decoration: none;
+        padding: 0.5rem 0.75rem;
+        border-radius: 0.25rem;
+        transition: all 0.3s ease;
+    }
+
+    .btn-dark-outline:hover {
+        color: #ffffff;
+        background-color: #495057;
+        border-color: #495057;
+    }
+
+    .btn-dark-outline.disabled {
+        color: #6c757d;
+        background-color: #343a40;
+        border-color: #495057;
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
 </style>
-@endsection 
+@endsection

@@ -30,66 +30,72 @@ class EmpleadoController extends Controller
 
         return view('empleados.index', compact('empleados'));
     }
-
-    // Mostrar formulario de creación
-    public function create()
+     public function create()
     {
         return view('empleados.create');
     }
 
-    // Guardar nuevo empleado
+    // Guardar un nuevo empleado
     public function store(Request $request)
     {
         $request->validate([
-            'nombre' => 'required|string|max:255|regex:/^[\pL\s]+$/u',
-            'apellido' => 'required|string|max:255|regex:/^[\pL\s]+$/u',
-            'correo' => 'required|email|unique:empleados,correo',
-            'telefono' => 'nullable|string|max:20|regex:/^[0-9]+$/',
-            'sexo' => 'required|in:Masculino,Femenino,Otro',
-            'identidad' => [
-                'required',
-                'string',
-                'size:15',
-                'unique:empleados,identidad',
-                'regex:/^\d{4}-\d{4}-\d{5}$/'
-            ],
-            'puesto' => 'required|string|max:255',
-            'salario' => 'required|numeric|min:0',
-            'fecha_contratacion' => 'required|date|before_or_equal:today',
-            'direccion' => 'nullable|string|max:255',
+            'nombre' => ['required', 'string', 'max:30', 'regex:/^[\pL\s]+$/u'],
+            'apellido' => ['required', 'string', 'max:30', 'regex:/^[\pL\s]+$/u'],
+            'correo' => ['required', 'email', 'regex:/^.+@.+\..+$/', 'unique:empleados,correo'],
+            'telefono' => ['required', 'regex:/^[2389][0-9]{7}$/', 'unique:empleados,telefono'],
+            'sexo' => ['required', 'in:Masculino,Femenino,Otro'],
+            'identidad' => ['required', 'string', 'size:15', 'regex:/^\d{4}-\d{4}-\d{5}$/', 'unique:empleados,identidad'],
+            'puesto' => ['required', 'string', 'max:255'],
+            'salario' => ['required', 'numeric', 'min:0', 'max:99999'],
+            'fecha_contratacion' => ['required', 'date', 'after_or_equal:2000-01-01', 'before_or_equal:today'],
+            'direccion' => ['nullable', 'string', 'max:255'],
         ], [
             'nombre.required' => 'El nombre es obligatorio.',
+            'nombre.max' => 'El nombre no debe tener más de 30 caracteres.',
             'nombre.regex' => 'El nombre solo puede contener letras y espacios.',
+
             'apellido.required' => 'El apellido es obligatorio.',
+            'apellido.max' => 'El apellido no debe tener más de 30 caracteres.',
             'apellido.regex' => 'El apellido solo puede contener letras y espacios.',
+
             'correo.required' => 'El correo es obligatorio.',
-            'correo.email' => 'Por favor ingrese un correo electrónico válido.',
-            'correo.unique' => 'Este correo electrónico ya está registrado.',
-            'telefono.regex' => 'El teléfono solo puede contener números.',
+            'correo.email' => 'Ingrese un correo válido.',
+            'correo.regex' => 'El correo debe contener al menos un punto.',
+            'correo.unique' => 'Este correo ya está registrado.',
+
+            'telefono.required' => 'El teléfono es obligatorio.',
+            'telefono.regex' => 'El teléfono debe tener 8 dígitos y comenzar con 2, 3, 8 o 9.',
+            'telefono.unique' => 'Este teléfono ya está registrado.',
+
             'sexo.required' => 'El sexo es obligatorio.',
             'sexo.in' => 'El sexo seleccionado no es válido.',
+
             'identidad.required' => 'El número de identidad es obligatorio.',
-            'identidad.size' => 'El número de identidad debe tener el formato ####-####-#####.',
-            'identidad.regex' => 'El número de identidad debe tener el formato ####-####-#####.',
-            'identidad.unique' => 'Este número de identidad ya está registrado.',
+            'identidad.size' => 'La identidad debe tener exactamente 15 caracteres.',
+            'identidad.regex' => 'Formato inválido: debe ser ####-####-#####.',
+            'identidad.unique' => 'Esta identidad ya está registrada.',
+
             'puesto.required' => 'El puesto es obligatorio.',
+
             'salario.required' => 'El salario es obligatorio.',
             'salario.numeric' => 'El salario debe ser un número.',
-            'salario.min' => 'El salario debe ser mayor a 0.',
+            'salario.max' => 'El salario no puede tener más de 5 cifras.',
+
             'fecha_contratacion.required' => 'La fecha de contratación es obligatoria.',
-            'fecha_contratacion.date' => 'La fecha de contratación debe ser una fecha válida.',
-            'fecha_contratacion.before_or_equal' => 'La fecha de contratación no puede ser futura.',
-            'direccion.required' => 'La dirección es obligatoria.',
+            'fecha_contratacion.date' => 'La fecha debe ser válida.',
+            'fecha_contratacion.after_or_equal' => 'La fecha no puede ser menor al año 2000.',
+            'fecha_contratacion.before_or_equal' => 'La fecha no puede ser futura.',
+
+            'direccion.max' => 'La dirección no puede tener más de 255 caracteres.',
         ]);
 
         try {
             Empleado::create($request->all());
+
             return redirect()->route('empleados.index')
-                ->with('success', '¡Empleado registrado con éxito!');
+                ->with('success', 'Empleado registrado exitosamente.');
         } catch (\Exception $e) {
-            return back()
-                ->withInput()
-                ->with('error', 'Error al registrar el empleado. Por favor, intente nuevamente.');
+            return redirect()->back()->with('error', 'Error al registrar el empleado: ' . $e->getMessage());
         }
     }
 
@@ -104,55 +110,62 @@ class EmpleadoController extends Controller
     public function update(Request $request, Empleado $empleado)
     {
         $request->validate([
-            'nombre' => 'required|string|max:255|regex:/^[\pL\s]+$/u',
-            'apellido' => 'required|string|max:255|regex:/^[\pL\s]+$/u',
-            'correo' => 'required|email|unique:empleados,correo,' . $empleado->id,
-            'telefono' => 'nullable|string|max:20|regex:/^[0-9]+$/',
-            'direccion' => 'nullable|string|max:255',
-            'identidad' => [
-                'required',
-                'string',
-                'size:15',
-                'unique:empleados,identidad,' . $empleado->id,
-                'regex:/^\d{4}-\d{4}-\d{5}$/'
-            ],
-            'puesto' => 'required|string|max:255',
-            'sexo' => 'required|in:Masculino,Femenino,Otro',
-            'salario' => 'required|numeric|min:0',
-            'fecha_contratacion' => 'required|date|before_or_equal:today',
+            'nombre' => ['required', 'string', 'max:30', 'regex:/^[\pL\s]+$/u'],
+            'apellido' => ['required', 'string', 'max:30', 'regex:/^[\pL\s]+$/u'],
+            'correo' => ['required', 'email', "unique:empleados,correo,{$empleado->id}"],
+            'telefono' => ['required', 'regex:/^[2389][0-9]{7}$/', "unique:empleados,telefono,{$empleado->id}"],
+            'sexo' => ['required', 'in:Masculino,Femenino,Otro'],
+            'identidad' => ['required', 'string', 'size:15', 'regex:/^\d{4}-\d{4}-\d{5}$/', "unique:empleados,identidad,{$empleado->id}"],
+            'puesto' => ['required', 'string', 'max:255'],
+            'salario' => ['required', 'numeric', 'min:0', 'max:99999'],
+            'fecha_contratacion' => ['required', 'date', 'after_or_equal:2000-01-01', 'before_or_equal:today'],
+            'direccion' => ['nullable', 'string', 'max:255'],
         ], [
             'nombre.required' => 'El nombre es obligatorio.',
+            'nombre.max' => 'El nombre no debe tener más de 30 caracteres.',
             'nombre.regex' => 'El nombre solo puede contener letras y espacios.',
+
             'apellido.required' => 'El apellido es obligatorio.',
+            'apellido.max' => 'El apellido no debe tener más de 30 caracteres.',
             'apellido.regex' => 'El apellido solo puede contener letras y espacios.',
+
             'correo.required' => 'El correo es obligatorio.',
-            'correo.email' => 'Por favor ingrese un correo electrónico válido.',
-            'correo.unique' => 'Este correo electrónico ya está registrado.',
-            'telefono.regex' => 'El teléfono solo puede contener números.',
+            'correo.email' => 'Por favor ingrese un correo válido.',
+            'correo.unique' => 'Este correo ya está registrado.',
+
+            'telefono.required' => 'El teléfono es obligatorio.',
+            'telefono.regex' => 'El teléfono debe tener 8 dígitos y comenzar con 2, 3, 8 o 9.',
+            'telefono.unique' => 'Este teléfono ya está registrado.',
+
             'sexo.required' => 'El sexo es obligatorio.',
             'sexo.in' => 'El sexo seleccionado no es válido.',
+
             'identidad.required' => 'El número de identidad es obligatorio.',
-            'identidad.size' => 'El número de identidad debe tener el formato ####-####-#####.',
-            'identidad.regex' => 'El número de identidad debe tener el formato ####-####-#####.',
-            'identidad.unique' => 'Este número de identidad ya está registrado.',
+            'identidad.size' => 'La identidad debe tener exactamente 15 caracteres.',
+            'identidad.regex' => 'Formato inválido: debe ser ####-####-#####.',
+            'identidad.unique' => 'Esta identidad ya está registrada.',
+
             'puesto.required' => 'El puesto es obligatorio.',
+
             'salario.required' => 'El salario es obligatorio.',
             'salario.numeric' => 'El salario debe ser un número.',
-            'salario.min' => 'El salario debe ser mayor a 0.',
+            'salario.max' => 'El salario no puede tener más de 5 cifras.',
+
             'fecha_contratacion.required' => 'La fecha de contratación es obligatoria.',
-            'fecha_contratacion.date' => 'La fecha de contratación debe ser una fecha válida.',
-            'fecha_contratacion.before_or_equal' => 'La fecha de contratación no puede ser futura.',
-            'direccion.required' => 'La dirección es obligatoria.',
+            'fecha_contratacion.date' => 'La fecha debe ser válida.',
+            'fecha_contratacion.after_or_equal' => 'La fecha no puede ser menor al año 2000.',
+            'fecha_contratacion.before_or_equal' => 'La fecha no puede ser futura.',
+
+            'direccion.max' => 'La dirección no puede tener más de 255 caracteres.',
         ]);
 
         try {
             $empleado->update($request->all());
+
             return redirect()->route('empleados.index')
-                ->with('success', '¡Empleado actualizado con éxito!');
+                ->with('success', 'Empleado actualizado exitosamente.');
         } catch (\Exception $e) {
-            return back()
-                ->withInput()
-                ->with('error', 'Error al actualizar el empleado. Por favor, intente nuevamente.');
+            return back()->withInput()->with('error', 'Error al actualizar el empleado: ' . $e->getMessage());
         }
     }
 

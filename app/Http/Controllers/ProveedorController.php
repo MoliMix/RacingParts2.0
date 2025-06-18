@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Proveedor;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule; // Asegúrate de importar esto
 
 class ProveedorController extends Controller
 {
@@ -31,9 +32,19 @@ class ProveedorController extends Controller
 
     public function store(Request $request)
     {
+        // La validación se hace llamando al método estático rules del modelo
         $request->validate(Proveedor::rules(), Proveedor::messages());
 
-        $proveedor = new Proveedor($request->all());
+        // Asegúrate de que los arrays se guarden como JSON si no usas casts en el modelo
+        $data = $request->all();
+        if (isset($data['marcas']) && is_array($data['marcas'])) {
+            $data['marcas'] = json_encode($data['marcas']);
+        }
+        if (isset($data['tipo_autopartes']) && is_array($data['tipo_autopartes'])) {
+            $data['tipo_autopartes'] = json_encode($data['tipo_autopartes']);
+        }
+
+        $proveedor = new Proveedor($data);
         $proveedor->save();
 
         return redirect()->route('proveedores.index')
@@ -55,9 +66,20 @@ class ProveedorController extends Controller
     public function update(Request $request, $id)
     {
         $proveedor = Proveedor::findOrFail($id);
+
+        // Pasa el ID del proveedor a las reglas para ignorarlo en la validación unique
         $request->validate(Proveedor::rules($id), Proveedor::messages());
 
-        $proveedor->update($request->all());
+        // Asegúrate de que los arrays se guarden como JSON si no usas casts en el modelo
+        $data = $request->all();
+        if (isset($data['marcas']) && is_array($data['marcas'])) {
+            $data['marcas'] = json_encode($data['marcas']);
+        }
+        if (isset($data['tipo_autopartes']) && is_array($data['tipo_autopartes'])) {
+            $data['tipo_autopartes'] = json_encode($data['tipo_autopartes']);
+        }
+
+        $proveedor->update($data);
 
         return redirect()->route('proveedores.index')
             ->with('success', '¡Proveedor actualizado con éxito!');
@@ -70,4 +92,4 @@ class ProveedorController extends Controller
         return redirect()->route('proveedores.index')
             ->with('success', '¡Proveedor eliminado con éxito!');
     }
-} 
+}
