@@ -1,26 +1,172 @@
-@extends('layouts.app')
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <title>Registrar Proveedor</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+    {{-- Select2 CSS --}}
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <style>
+        body {
+            background-color: #121212;
+            color: #f1f1f1;
+            /* Se eliminan: min-height, display: flex, align-items, justify-content, padding para no interferir con layout.app */
+        }
 
-@section('title', 'Registrar Proveedor')
+        .form-container {
+            background-color: #1e1e1e;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 0 20px rgba(0,0,0,0.6);
+            width: 100%;
+            max-width: 950px; /* Ancho máximo aumentado, según tu solicitud */
+            margin: 2rem auto; /* Añadir margen automático para centrar horizontalmente */
+        }
 
-@section('content')
-{{-- Contenedor principal con padding vertical y centrado --}}
+        .form-label {
+            color: #ccc;
+        }
+
+        .form-control, .form-select, textarea { /* Añadido textarea aquí para consistencia */
+            background-color: #2c2c2c;
+            border: none;
+            color: #fff;
+        }
+
+        .form-control:focus, .form-select:focus, textarea:focus { /* Añadido textarea aquí */
+            background-color: #2c2c2c;
+            color: #fff;
+            border-color: #4caf50;
+            box-shadow: 0 0 0 0.2rem rgba(76, 175, 80, 0.25);
+        }
+
+        .btn-primary {
+            background-color: #4caf50;
+            border: none;
+        }
+
+        .btn-primary:hover {
+            background-color: #43a047;
+        }
+
+        /* Estilos para los botones Limpiar y Cancelar (si tu layout.app no los maneja) */
+        .btn-secondary {
+            background-color: #6c757d;
+            border-color: #6c757d;
+        }
+        .btn-secondary:hover {
+            background-color: #5a6268;
+            border-color: #545b62;
+        }
+
+        .btn-outline-danger {
+            color: #dc3545;
+            border-color: #dc3545;
+        }
+
+        .btn-outline-danger:hover {
+            background-color: #dc3545;
+            color: #fff;
+        }
+
+
+        h2 {
+            color: #e0e0e0;
+            text-align: center; /* Restaurado: centrar el título H2 */
+        }
+
+        /* Estilos para los mensajes de validación (esenciales) */
+        .invalid-feedback {
+            display: none;
+            width: 100%;
+            margin-top: 0.25rem;
+            font-size: 0.875em;
+            color: #dc3545;
+        }
+
+        .form-control.is-invalid ~ .invalid-feedback,
+        .form-select.is-invalid ~ .invalid-feedback,
+        textarea.is-invalid ~ .invalid-feedback {
+            display: block;
+        }
+
+        /* Estilos para Select2 (esenciales para el tema oscuro) */
+        .select2-container--default .select2-selection--multiple {
+            background-color: #2c2c2c !important;
+            border: none !important;
+            border-radius: .375rem !important;
+            padding: .375rem .75rem !important;
+            min-height: calc(1.5em + .75rem + 2px);
+        }
+        .select2-container--default .select2-selection--multiple .select2-selection__choice {
+            background-color: #4caf50;
+            color: white;
+            border: none;
+            border-radius: .2rem;
+            padding: .2rem .5rem;
+        }
+        .select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
+            color: white;
+            margin-right: 5px;
+        }
+        .select2-container--default .select2-selection--multiple .select2-selection__choice__remove:hover {
+            color: #ddd;
+        }
+        .select2-container--default.select2-container--focus .select2-selection--multiple {
+            border-color: #4caf50 !important;
+            box-shadow: 0 0 0 0.2rem rgba(76, 175, 80, 0.25) !important;
+        }
+        .select2-container--default .select2-selection--multiple .select2-selection__rendered {
+            color: #fff;
+        }
+        .select2-dropdown {
+            background-color: #2c2c2c;
+            border: none;
+            color: #fff;
+        }
+        .select2-results__option {
+            color: #fff;
+        }
+        .select2-results__option--highlighted {
+            background-color: #4caf50 !important;
+            color: white !important;
+        }
+        .select2-search__field {
+            background-color: #1e1e1e !important;
+            color: #fff !important;
+            border-color: #4caf50 !important;
+        }
+        /* Estilos para Select2 cuando está inválido (esenciales) */
+        .is-invalid-select2 {
+            border-color: #dc3545 !important;
+            padding-right: calc(1.5em + 0.75rem) !important;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath stroke-linejoin='round' d='M5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%23dc3545' stroke='none'/%3e%3c/svg%3e") !important;
+            background-repeat: no-repeat !important;
+            background-position: right calc(0.375em + 0.1875rem) center !important;
+            background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem) !important;
+        }
+    </style>
+</head>
+<body>
 <div class="container py-5">
     <div class="row justify-content-center">
         <div class="col-lg-10">
-            {{-- Contenedor del formulario con estilos oscuros y sombra --}}
             <div class="form-container">
                 <h2 class="mb-4">Registrar nuevo proveedor</h2>
 
-                {{-- Mensajes de éxito y error de sesión (si se usan) --}}
+                {{-- Mensajes de éxito y error de sesión --}}
                 @if(session('success'))
-                    <div class="alert alert-success">
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
                         {{ session('success') }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                     </div>
                 @endif
 
                 @if(session('error'))
-                    <div class="alert alert-danger">
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
                         {{ session('error') }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                     </div>
                 @endif
 
@@ -30,13 +176,14 @@
                         <div class="col-md-6 mb-3">
                             <label for="nombre_empresa" class="form-label">Nombre de la empresa *</label>
                             <input type="text" class="form-control @error('nombre_empresa') is-invalid @enderror"
-                                   id="nombre_empresa" name="nombre_empresa" value="{{ old('nombre_empresa') }}" required maxlength="100">
+                                   id="nombre_empresa" name="nombre_empresa" value="{{ old('nombre_empresa') }}" required maxlength="30">
                             <div class="invalid-feedback" id="nombre_empresa-feedback">
-                                El nombre de la empresa es requerido y debe tener un máximo de 100 caracteres.
+                                @error('nombre_empresa')
+                                    {{ $message }}
+                                @else
+                                    Este campo es obligatorio.
+                                @enderror
                             </div>
-                            @error('nombre_empresa')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
                         </div>
 
                         <div class="col-md-6 mb-3">
@@ -52,11 +199,12 @@
                                 @endforeach
                             </select>
                             <div class="invalid-feedback" id="pais_origen-feedback">
-                                Por favor, seleccione el país de origen.
+                                @error('pais_origen')
+                                    {{ $message }}
+                                @else
+                                    Por favor, seleccione el país de origen.
+                                @enderror
                             </div>
-                            @error('pais_origen')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
                         </div>
 
                         <div class="col-md-6 mb-3">
@@ -65,23 +213,25 @@
                                    id="persona_contacto" name="persona_contacto" value="{{ old('persona_contacto') }}"
                                    title="Solo se permiten letras y espacios" required maxlength="32">
                             <div class="invalid-feedback" id="persona_contacto-feedback">
-                                La persona de contacto es requerida, solo letras y espacios, máximo 32 caracteres.
+                                @error('persona_contacto')
+                                    {{ $message }}
+                                @else
+                                    Este campo es obligatorio.
+                                @enderror
                             </div>
-                            @error('persona_contacto')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
                         </div>
 
                         <div class="col-md-6 mb-3">
                             <label for="correo_electronico" class="form-label">Correo electrónico *</label>
                             <input type="email" class="form-control @error('correo_electronico') is-invalid @enderror"
-                                   id="correo_electronico" name="correo_electronico" value="{{ old('correo_electronico') }}" required maxlength="100">
+                                   id="correo_electronico" name="correo_electronico" value="{{ old('correo_electronico') }}" required maxlength="30">
                             <div class="invalid-feedback" id="correo_electronico-feedback">
-                                Ingrese un correo válido (ej. usuario@dominio.com).
+                                @error('correo_electronico')
+                                    {{ $message }}
+                                @else
+                                    Este campo es obligatorio y debe ser un correo válido .
+                                @enderror
                             </div>
-                            @error('correo_electronico')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
                         </div>
 
                         <div class="col-md-6 mb-3">
@@ -90,23 +240,25 @@
                                    id="telefono_contacto" name="telefono_contacto" value="{{ old('telefono_contacto') }}"
                                    maxlength="12" required placeholder="Ej: +504XXXXXXXX">
                             <div class="invalid-feedback" id="telefono_contacto-feedback">
-                                El teléfono debe incluir el código de país (ej. +504) y tener entre 8 y 12 dígitos (incluyendo el +).
+                                @error('telefono_contacto')
+                                    {{ $message }}
+                                @else
+                                    Este campo es obligatorio .
+                                @enderror
                             </div>
-                            @error('telefono_contacto')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
                         </div>
 
                         <div class="col-md-6 mb-3">
                             <label for="direccion" class="form-label">Dirección *</label>
-                            <input type="text" class="form-control @error('direccion') is-invalid @enderror"
-                                   id="direccion" name="direccion" value="{{ old('direccion') }}" required maxlength="255">
+                            <textarea class="form-control @error('direccion') is-invalid @enderror"
+                                      id="direccion" name="direccion" required maxlength="150" rows="3">{{ old('direccion') }}</textarea>
                             <div class="invalid-feedback" id="direccion-feedback">
-                                La dirección es requerida y puede contener letras, números, espacios y caracteres especiales como ., #, -.
+                                @error('direccion')
+                                    {{ $message }}
+                                @else
+                                    Este campo es obligatorio.
+                                @enderror
                             </div>
-                            @error('direccion')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
                         </div>
 
                         <div class="col-md-6 mb-3">
@@ -126,11 +278,12 @@
                                 <option value="Chevrolet" {{ in_array('Chevrolet', old('marcas', [])) ? 'selected' : '' }}>Chevrolet</option>
                             </select>
                             <div class="invalid-feedback" id="marcas-feedback">
-                                Por favor, seleccione al menos una marca.
+                                @error('marcas')
+                                    {{ $message }}
+                                @else
+                                    Por favor, seleccione al menos una marca.
+                                @enderror
                             </div>
-                            @error('marcas')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
                         </div>
 
                         <div class="col-md-6 mb-3">
@@ -148,11 +301,12 @@
                                 <option value="Accesorios" {{ in_array('Accesorios', old('accesorios', [])) ? 'selected' : '' }}>Accesorios</option>
                             </select>
                             <div class="invalid-feedback" id="tipo_autopartes-feedback">
-                                Por favor, seleccione al menos un tipo de autoparte.
+                                @error('tipo_autopartes')
+                                    {{ $message }}
+                                @else
+                                    Por favor, seleccione al menos un tipo de autoparte.
+                                @enderror
                             </div>
-                            @error('tipo_autopartes')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
                         </div>
 
                         <div class="col-md-6 mb-3">
@@ -161,11 +315,12 @@
                                    id="persona_contacto_secundaria" name="persona_contacto_secundaria"
                                    value="{{ old('persona_contacto_secundaria') }}" maxlength="32">
                             <div class="invalid-feedback" id="persona_contacto_secundaria-feedback">
-                                Solo se permiten letras y espacios, máximo 32 caracteres.
+                                @error('persona_contacto_secundaria')
+                                    {{ $message }}
+                                @else
+                                    Solo se permiten letras y espacios, máximo 32 caracteres.
+                                @enderror
                             </div>
-                            @error('persona_contacto_secundaria')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
                         </div>
 
                         <div class="col-md-6 mb-3">
@@ -173,18 +328,20 @@
                             <input type="text" class="form-control @error('telefono_contacto_secundario') is-invalid @enderror"
                                    id="telefono_contacto_secundario" name="telefono_contacto_secundario"
                                    value="{{ old('telefono_contacto_secundario') }}" maxlength="12" placeholder="Ej: +504XXXXXXXX">
-                            <div class="invalid-feedback" id="telefono_contacto_secundaria-feedback">
-                                El teléfono debe incluir el código de país (ej. +504) y tener entre 8 y 12 dígitos (incluyendo el +).
+                            <div class="invalid-feedback" id="telefono_contacto_secundario-feedback">
+                                @error('telefono_contacto_secundario')
+                                    {{ $message }}
+                                @else
+                                    Este campo es obligatorio.
+                                @enderror
                             </div>
-                            @error('telefono_contacto_secundario')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
                         </div>
                     </div>
 
-                    <div class="mt-4">
+                    <div class="d-flex justify-content-start gap-2 mt-4">
                         <button type="submit" class="btn btn-primary">Registrar Proveedor</button>
-                        <a href="{{ route('proveedores.index') }}" class="btn btn-outline-light ms-2">Cancelar</a>
+                        <button type="button" class="btn btn-secondary" id="limpiarFormulario">Limpiar</button>
+                        <a href="{{ route('proveedores.index') }}" class="btn btn-outline-danger">Cancelar</a>
                     </div>
                 </form>
             </div>
@@ -196,118 +353,27 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 {{-- jQuery (necesario para Select2) --}}
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
-{{-- Select2 CSS --}}
-<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 {{-- Select2 JS --}}
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
 
-<style>
-    body {
-        background-color: #121212;
-        color: #f1f1f1;
-    }
-
-    .form-container {
-        background-color: #1e1e1e;
-        border-radius: 12px;
-        padding: 2rem;
-        box-shadow: 0 0 20px rgba(0,0,0,0.6);
-    }
-
-    .form-label {
-        color: #ccc;
-    }
-
-    .form-control, .form-select {
-        background-color: #2c2c2c;
-        border: none;
-        color: #fff;
-    }
-
-    .form-control:focus, .form-select:focus {
-        background-color: #2c2c2c;
-        color: #fff;
-        border-color: #4caf50;
-        box-shadow: 0 0 0 0.2rem rgba(76, 175, 80, 0.25);
-    }
-
-    .btn-primary {
-        background-color: #4caf50;
-        border: none;
-    }
-
-    .btn-primary:hover {
-        background-color: #43a047;
-    }
-
-    h2 {
-        color: #e0e0e0;
-    }
-
-    /* Estilos para Select2 para que coincidan con el tema oscuro */
-    .select2-container--default .select2-selection--multiple {
-        background-color: #2c2c2c !important;
-        border: none !important;
-        border-radius: .375rem !important;
-        padding: .375rem .75rem !important;
-        min-height: calc(1.5em + .75rem + 2px);
-    }
-    .select2-container--default .select2-selection--multiple .select2-selection__choice {
-        background-color: #4caf50;
-        color: white;
-        border: none;
-        border-radius: .2rem;
-        padding: .2rem .5rem;
-    }
-    .select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
-        color: white;
-        margin-right: 5px;
-    }
-    .select2-container--default .select2-selection--multiple .select2-selection__choice__remove:hover {
-        color: #ddd;
-    }
-    .select2-container--default.select2-container--focus .select2-selection--multiple {
-        border-color: #4caf50 !important;
-        box-shadow: 0 0 0 0.2rem rgba(76, 175, 80, 0.25) !important;
-    }
-    .select2-container--default .select2-selection--multiple .select2-selection__rendered {
-        color: #fff;
-    }
-    .select2-dropdown {
-        background-color: #2c2c2c;
-        border: none;
-        color: #fff;
-    }
-    .select2-results__option {
-        color: #fff;
-    }
-    .select2-results__option--highlighted {
-        background-color: #4caf50 !important;
-        color: white !important;
-    }
-    .select2-search__field {
-        background-color: #1e1e1e !important;
-        color: #fff !important;
-        border-color: #4caf50 !important;
-    }
-</style>
-
-@endsection
-
-@section('scripts')
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('formProveedor');
-    const paisOrigenSelect = document.getElementById('pais_origen');
+    const nombreEmpresaInput = document.getElementById('nombre_empresa');
+    const personaContactoInput = document.getElementById('persona_contacto');
     const telefonoContactoInput = document.getElementById('telefono_contacto');
+    const correoInput = document.getElementById('correo_electronico');
+    const direccionTextarea = document.getElementById('direccion');
+    const paisOrigenSelect = document.getElementById('pais_origen');
+    const marcasSelect = document.getElementById('marcas');
+    const tipoAutopartesSelect = document.getElementById('tipo_autopartes');
+    const personaContactoSecundariaInput = document.getElementById('persona_contacto_secundaria');
     const telefonoContactoSecundarioInput = document.getElementById('telefono_contacto_secundario');
 
+    // --- PAÍSES (Asegúrate de que 'countries' esté definido, ya sea inyectado por Laravel o JS) ---
+    // Si 'countries' no viene de Laravel, defínelo aquí completamente:
     const countries = [
-        { "name": "Afghanistan", "phone_code": "+93" },
         { "name": "Albania", "phone_code": "+355" },
         { "name": "Algeria", "phone_code": "+213" },
         { "name": "Andorra", "phone_code": "+376" },
@@ -501,207 +567,422 @@ document.addEventListener('DOMContentLoaded', function() {
         { "name": "Yemen", "phone_code": "+967" },
         { "name": "Zambia", "phone_code": "+260" },
         { "name": "Zimbabwe", "phone_code": "+263" }
+
     ];
 
+    // Función para poblar el select de países (si no está ya poblado por Blade)
     function populateCountries() {
-        const fragment = document.createDocumentFragment();
-        const placeholderOption = document.createElement('option');
-        placeholderOption.value = '';
-        placeholderOption.textContent = 'Seleccione un país...';
-        fragment.appendChild(placeholderOption);
+        // Solo poblar si no hay opciones cargadas por Blade (excepto la placeholder)
+        if (paisOrigenSelect.options.length <= 1 || paisOrigenSelect.querySelector('option[value=""]')) {
+            const currentSelectedValue = paisOrigenSelect.value; // Guardar valor seleccionado
+            paisOrigenSelect.innerHTML = ''; // Limpiar opciones existentes
+            const placeholderOption = document.createElement('option');
+            placeholderOption.value = '';
+            placeholderOption.textContent = 'Seleccione un país...';
+            paisOrigenSelect.appendChild(placeholderOption);
 
-        countries.forEach(country => {
-            const option = document.createElement('option');
-            option.value = country.name;
-            option.textContent = country.name;
-            option.setAttribute('data-phone-code', country.phone_code);
-            if ("{{ old('pais_origen') }}" === country.name) {
-                option.selected = true;
-            }
-            fragment.appendChild(option);
-        });
-        paisOrigenSelect.appendChild(fragment);
+            countries.forEach(country => {
+                const option = document.createElement('option');
+                option.value = country.name;
+                option.textContent = country.name;
+                option.setAttribute('data-phone-code', country.phone_code);
+                if (currentSelectedValue === country.name) {
+                    option.selected = true; // Restaurar selección
+                }
+                paisOrigenSelect.appendChild(option);
+            });
+        }
     }
-    populateCountries();
+    populateCountries(); // Llama para asegurar que los países estén ahí.
 
+
+    // Inicialización de Select2 para campos multi-select
     $('#marcas, #tipo_autopartes').select2({
         theme: 'default',
         width: '100%',
         placeholder: 'Seleccione las opciones',
-        allowClear: true
+        allowClear: true // Permite deseleccionar todas las opciones
     });
 
+    // Evento change para el selector de país para actualizar el código telefónico
     paisOrigenSelect.addEventListener('change', function() {
         const selectedOption = this.options[this.selectedIndex];
-        const phoneCode = selectedOption.getAttribute('data-phone-code');
+        const phoneCode = selectedOption ? selectedOption.getAttribute('data-phone-code') : '';
 
         const updatePhoneNumberField = (inputElement, code) => {
             let currentValue = inputElement.value.trim();
-            const regexStartsWithPlus = /^\+\d*$/;
-            const isCodeOnly = currentValue === '' || regexStartsWithPlus.test(currentValue);
-
-            if (code) {
-                if (isCodeOnly || !currentValue.startsWith(code)) {
-                    inputElement.value = code;
-                }
-            } else {
-                if (isCodeOnly) {
-                    inputElement.value = '';
-                }
+            // Si el valor actual es solo un signo '+' o vacío, o no empieza con el nuevo código, se actualiza
+            if (!currentValue || currentValue === '+' || !currentValue.startsWith(code)) {
+                inputElement.value = code;
             }
-            inputElement.dispatchEvent(new Event('input'));
+            // Asegurarse de que el cursor esté al final del código
+            // Solo si el campo no está vacío después de la actualización (para no poner el cursor en un campo vacío)
+            if (inputElement.value) {
+                inputElement.setSelectionRange(inputElement.value.length, inputElement.value.length);
+            }
         };
 
         updatePhoneNumberField(telefonoContactoInput, phoneCode);
         updatePhoneNumberField(telefonoContactoSecundarioInput, phoneCode);
+        // Disparar evento input para que la validación en tiempo real de formato de teléfono se actualice
+        telefonoContactoInput.dispatchEvent(new Event('input'));
+        telefonoContactoSecundarioInput.dispatchEvent(new Event('input'));
     });
 
+    // Disparar el cambio de país al cargar si ya hay un valor seleccionado (útil con old())
     if (paisOrigenSelect.value) {
         paisOrigenSelect.dispatchEvent(new Event('change'));
     }
 
+    // --- PREVENCIÓN DE ENTRADA EN TIEMPO REAL (Más estricta) ---
 
-    form.addEventListener('submit', function(event) {
-        let formIsValid = true;
-
-        document.querySelectorAll('.is-invalid').forEach(element => {
-            element.classList.remove('is-invalid');
-        });
-        document.querySelectorAll('.invalid-feedback').forEach(element => {
-            element.style.display = 'none';
-        });
-
-        const nombreEmpresaInput = document.getElementById('nombre_empresa');
-        const nombreEmpresa = nombreEmpresaInput.value.trim();
-        if (nombreEmpresa.length === 0 || nombreEmpresa.length > 100) {
-            nombreEmpresaInput.classList.add('is-invalid');
-            document.getElementById('nombre_empresa-feedback').style.display = 'block';
-            formIsValid = false;
-        }
-
-        const paisOrigen = paisOrigenSelect.value;
-        if (paisOrigen === "") {
-            paisOrigenSelect.classList.add('is-invalid');
-            document.getElementById('pais_origen-feedback').style.display = 'block';
-            formIsValid = false;
-        }
-
-        const personaContactoInput = document.getElementById('persona_contacto');
-        const personaContacto = personaContactoInput.value.trim();
-        const regexNombre = /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/;
-        if (personaContacto.length === 0 || personaContacto.length > 32 || !regexNombre.test(personaContacto)) {
-            personaContactoInput.classList.add('is-invalid');
-            document.getElementById('persona_contacto-feedback').style.display = 'block';
-            formIsValid = false;
-        }
-
-        const correoElectronicoInput = document.getElementById('correo_electronico');
-        const correoElectronico = correoElectronicoInput.value.trim();
-        const regexCorreo = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-        if (!correoElectronico || !regexCorreo.test(correoElectronico) || correoElectronico.length > 100) {
-            correoElectronicoInput.classList.add('is-invalid');
-            document.getElementById('correo_electronico-feedback').style.display = 'block';
-            formIsValid = false;
-        }
-
-        const telefonoContacto = telefonoContactoInput.value.trim();
-        // CAMBIO: Regex para + seguido de 7 a 11 dígitos, total 8 a 12 caracteres.
-        const regexTelefonoFull = /^\+\d{7,11}$/;
-
-        if (!telefonoContacto || !regexTelefonoFull.test(telefonoContacto) || telefonoContacto.length < 8 || telefonoContacto.length > 12) {
-            telefonoContactoInput.classList.add('is-invalid');
-            document.getElementById('telefono_contacto-feedback').style.display = 'block';
-            formIsValid = false;
-        }
-
-
-        const direccionInput = document.getElementById('direccion');
-        const direccion = direccionInput.value.trim();
-        const regexDireccion = /^[a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\s.,#\-\/]+$/;
-        if (!direccion || direccion.length > 255 || !regexDireccion.test(direccion)) {
-            direccionInput.classList.add('is-invalid');
-            document.getElementById('direccion-feedback').style.display = 'block';
-            formIsValid = false;
-        }
-
-        const marcasSelect = document.getElementById('marcas');
-        const selectedMarcas = $('#marcas').val();
-        if (!selectedMarcas || selectedMarcas.length === 0) {
-            marcasSelect.classList.add('is-invalid');
-            document.getElementById('marcas-feedback').style.display = 'block';
-            formIsValid = false;
-        }
-
-        const tipoAutopartesSelect = document.getElementById('tipo_autopartes');
-        const selectedTipoAutopartes = $('#tipo_autopartes').val();
-        if (!selectedTipoAutopartes || selectedTipoAutopartes.length === 0) {
-            tipoAutopartesSelect.classList.add('is-invalid');
-            document.getElementById('tipo_autopartes-feedback').style.display = 'block';
-            formIsValid = false;
-        }
-
-        const personaContactoSecundariaInput = document.getElementById('persona_contacto_secundaria');
-        const personaContactoSecundaria = personaContactoSecundariaInput.value.trim();
-        if (personaContactoSecundaria.length > 0 && (!regexNombre.test(personaContactoSecundaria) || personaContactoSecundaria.length > 32)) {
-            personaContactoSecundariaInput.classList.add('is-invalid');
-            document.getElementById('persona_contacto_secundaria-feedback').style.display = 'block';
-            formIsValid = false;
-        }
-
-        const telefonoContactoSecundario = telefonoContactoSecundarioInput.value.trim();
-        // CAMBIO: Regex para + seguido de 7 a 11 dígitos, total 8 a 12 caracteres.
-        if (telefonoContactoSecundario.length > 0 && (!regexTelefonoFull.test(telefonoContactoSecundario) || telefonoContactoSecundario.length < 8 || telefonoContactoSecundario.length > 12)) {
-            telefonoContactoSecundarioInput.classList.add('is-invalid');
-            document.getElementById('telefono_contacto_secundaria-feedback').style.display = 'block';
-            formIsValid = false;
-        }
-
-        if (!formIsValid) {
-            event.preventDefault();
-            event.stopPropagation();
+    // Nombre de Empresa: Limitar a 30 caracteres.
+    nombreEmpresaInput.addEventListener('input', function() {
+        if (this.value.length > 30) {
+            this.value = this.value.substring(0, 30);
         }
     });
 
+    // Persona de Contacto: Solo letras, espacios, y tildes/ñ, hasta 32 caracteres.
+    const regexSoloLetrasEspacios = /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]*$/;
+    personaContactoInput.addEventListener('input', function() {
+        let value = this.value;
+        const originalSelectionStart = this.selectionStart;
+        const originalSelectionEnd = this.selectionEnd;
+
+        // Filtra caracteres no permitidos
+        let filteredValue = value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, '');
+
+        // Limita la longitud
+        if (filteredValue.length > 32) {
+            filteredValue = filteredValue.substring(0, 32);
+        }
+
+        if (this.value !== filteredValue) {
+            this.value = filteredValue;
+            // Ajusta la posición del cursor si los caracteres fueron eliminados
+            this.setSelectionRange(originalSelectionStart - (value.length - filteredValue.length), originalSelectionEnd - (value.length - filteredValue.length));
+        }
+    });
+    personaContactoSecundariaInput.addEventListener('input', function() {
+        let value = this.value;
+        const originalSelectionStart = this.selectionStart;
+        const originalSelectionEnd = this.selectionEnd;
+
+        // Filtra caracteres no permitidos
+        let filteredValue = value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, '');
+
+        // Limita la longitud
+        if (filteredValue.length > 32) {
+            filteredValue = filteredValue.substring(0, 32);
+        }
+
+        if (this.value !== filteredValue) {
+            this.value = filteredValue;
+            // Ajusta la posición del cursor si los caracteres fueron eliminados
+            this.setSelectionRange(originalSelectionStart - (value.length - filteredValue.length), originalSelectionEnd - (value.length - filteredValue.length));
+        }
+    });
+
+    // Teléfono: Solo números y un '+' inicial. Máx 12 caracteres.
     const restrictPhoneInput = (inputElement) => {
         inputElement.addEventListener('input', function (e) {
             let value = e.target.value;
             let startWithPlus = value.startsWith('+');
 
+            // Elimina todo lo que no sea dígito o el primer '+'
             value = value.replace(/[^\d+]/g, '');
             if (startWithPlus && value[0] !== '+') {
                 value = '+' + value;
-            }
-            if (!startWithPlus && value.startsWith('+')) {
+            } else if (!startWithPlus && value.startsWith('+')) { // Si tenía '+' pero no se inició con él, quítalo
                 value = value.substring(1);
             }
 
-            e.target.value = value.substring(0, 12); // Max 12 caracteres (incluyendo el '+')
+            // Limita a 12 caracteres (incluyendo el '+')
+            if (value.length > 12) {
+                value = value.substring(0, 12);
+            }
+            e.target.value = value;
         });
     };
-
     restrictPhoneInput(telefonoContactoInput);
     restrictPhoneInput(telefonoContactoSecundarioInput);
 
 
-    document.querySelectorAll('.form-control, .form-select').forEach(input => {
+    // Correo: Limitar a 30 caracteres.
+    correoInput.addEventListener('input', function() {
+        if (this.value.length > 30) {
+            this.value = this.value.substring(0, 30);
+        }
+    });
+
+    // Dirección: Limitar a 150 caracteres.
+    direccionTextarea.addEventListener('input', function() {
+        if (this.value.length > 150) {
+            this.value = this.value.substring(0, 150);
+        }
+    });
+
+
+    // --- VALIDACIÓN EN EL ENVÍO DEL FORMULARIO (Se activa si JS permite el envío inicial) ---
+
+    form.addEventListener('submit', function(event) {
+        let formIsValid = true;
+
+        // Limpiar mensajes de error previos (excepto los de Laravel que están marcados)
+        document.querySelectorAll('.is-invalid').forEach(element => {
+            element.classList.remove('is-invalid');
+        });
+        document.querySelectorAll('.invalid-feedback').forEach(element => {
+            if (!element.dataset.laravelError) { // No ocultar si es un error de Laravel
+                element.style.display = 'none';
+                element.textContent = ''; // Limpiar el texto si no es de Laravel
+            }
+        });
+        // Limpiar la clase de Select2 también
+        $('.is-invalid-select2').removeClass('is-invalid-select2');
+
+
+        // Validar Nombre de Empresa
+        if (nombreEmpresaInput.value.trim() === '') {
+            nombreEmpresaInput.classList.add('is-invalid');
+            document.getElementById('nombre_empresa-feedback').textContent = 'Este campo es obligatorio.';
+            document.getElementById('nombre_empresa-feedback').style.display = 'block';
+            formIsValid = false;
+        }
+
+        // Validar País de Origen
+        if (paisOrigenSelect.value === "") {
+            paisOrigenSelect.classList.add('is-invalid');
+            document.getElementById('pais_origen-feedback').textContent = 'Por favor, seleccione el país de origen.';
+            document.getElementById('pais_origen-feedback').style.display = 'block';
+            formIsValid = false;
+        }
+
+        // Validar Persona de Contacto
+        const personaContacto = personaContactoInput.value.trim();
+        if (personaContacto === '') {
+            personaContactoInput.classList.add('is-invalid');
+            document.getElementById('persona_contacto-feedback').textContent = 'Este campo es obligatorio.';
+            document.getElementById('persona_contacto-feedback').style.display = 'block';
+            formIsValid = false;
+        } else if (!regexSoloLetrasEspacios.test(personaContacto)) {
+            personaContactoInput.classList.add('is-invalid');
+            document.getElementById('persona_contacto-feedback').textContent = 'Solo se permiten letras y espacios.';
+            document.getElementById('persona_contacto-feedback').style.display = 'block';
+            formIsValid = false;
+        }
+
+        // Validar Correo
+        const correo = correoInput.value.trim();
+        const regexCorreo = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+        if (correo === '') {
+            correoInput.classList.add('is-invalid');
+            document.getElementById('correo_electronico-feedback').textContent = 'Este campo es obligatorio.';
+            document.getElementById('correo_electronico-feedback').style.display = 'block';
+            formIsValid = false;
+        } else if (!regexCorreo.test(correo)) {
+            correoInput.classList.add('is-invalid');
+            document.getElementById('correo_electronico-feedback').textContent = 'Ingrese un correo electrónico válido.';
+            document.getElementById('correo_electronico-feedback').style.display = 'block';
+            formIsValid = false;
+        } else if (correo.length > 30) {
+            correoInput.classList.add('is-invalid');
+            document.getElementById('correo_electronico-feedback').textContent = 'El correo no debe exceder los 30 caracteres.';
+            document.getElementById('correo_electronico-feedback').style.display = 'block';
+            formIsValid = false;
+        }
+
+        // Validar Teléfono de Contacto Principal
+        const telefonoContacto = telefonoContactoInput.value.trim();
+        const regexTelefonoFull = /^\+\d{7,11}$/; // + seguido de 7 a 11 dígitos, total 8 a 12 caracteres.
+        if (telefonoContacto === '') {
+            telefonoContactoInput.classList.add('is-invalid');
+            document.getElementById('telefono_contacto-feedback').textContent = 'Este campo es obligatorio.';
+            document.getElementById('telefono_contacto-feedback').style.display = 'block';
+            formIsValid = false;
+        } else if (!regexTelefonoFull.test(telefonoContacto)) {
+            telefonoContactoInput.classList.add('is-invalid');
+            document.getElementById('telefono_contacto-feedback').textContent = 'El teléfono debe incluir el código de país (ej. +504) y tener entre 8 y 12 caracteres (incluyendo el +).';
+            document.getElementById('telefono_contacto-feedback').style.display = 'block';
+            formIsValid = false;
+        }
+
+        // Validar Dirección
+        if (direccionTextarea.value.trim() === '') {
+            direccionTextarea.classList.add('is-invalid');
+            document.getElementById('direccion-feedback').textContent = 'Este campo es obligatorio.';
+            document.getElementById('direccion-feedback').style.display = 'block';
+            formIsValid = false;
+        } else if (direccionTextarea.value.length > 150) {
+            direccionTextarea.classList.add('is-invalid');
+            document.getElementById('direccion-feedback').textContent = 'La dirección no debe exceder los 150 caracteres.';
+            document.getElementById('direccion-feedback').style.display = 'block';
+            formIsValid = false;
+        }
+
+        // Validar Marcas que maneja (Select2)
+        const selectedMarcas = $(marcasSelect).val();
+        if (!selectedMarcas || selectedMarcas.length === 0) {
+            $(marcasSelect).next('.select2-container').find('.select2-selection').addClass('is-invalid-select2'); // Clase para Select2
+            document.getElementById('marcas-feedback').textContent = 'Por favor, seleccione al menos una marca.';
+            document.getElementById('marcas-feedback').style.display = 'block';
+            formIsValid = false;
+        }
+
+        // Validar Tipo de Autopartes (Select2)
+        const selectedTipoAutopartes = $(tipoAutopartesSelect).val();
+        if (!selectedTipoAutopartes || selectedTipoAutopartes.length === 0) {
+            $(tipoAutopartesSelect).next('.select2-container').find('.select2-selection').addClass('is-invalid-select2'); // Clase para Select2
+            document.getElementById('tipo_autopartes-feedback').textContent = 'Por favor, seleccione al menos un tipo de autoparte.';
+            document.getElementById('tipo_autopartes-feedback').style.display = 'block';
+            formIsValid = false;
+        }
+
+        // Validar Persona de Contacto Secundaria (Opcional, pero si se llena, validar formato y longitud)
+        const personaContactoSecundaria = personaContactoSecundariaInput.value.trim();
+        if (personaContactoSecundaria.length > 0 && (!regexSoloLetrasEspacios.test(personaContactoSecundaria) || personaContactoSecundaria.length > 32)) {
+            personaContactoSecundariaInput.classList.add('is-invalid');
+            document.getElementById('persona_contacto_secundaria-feedback').textContent = 'Solo se permiten letras y espacios, máximo 32 caracteres.';
+            document.getElementById('persona_contacto_secundaria-feedback').style.display = 'block';
+            formIsValid = false;
+        }
+
+        // Validar Teléfono de Contacto Secundario (Opcional, pero si se llena, validar formato y longitud)
+        const telefonoContactoSecundario = telefonoContactoSecundarioInput.value.trim();
+        if (telefonoContactoSecundario.length > 0 && (!regexTelefonoFull.test(telefonoContactoSecundario) || telefonoContactoSecundario.length < 8 || telefonoContactoSecundario.length > 12)) {
+            telefonoContactoSecundarioInput.classList.add('is-invalid');
+            document.getElementById('telefono_contacto_secundario-feedback').textContent = 'El teléfono debe incluir el código de país (ej. +504) y tener entre 8 y 12 caracteres (incluyendo el +).';
+            document.getElementById('telefono_contacto_secundario-feedback').style.display = 'block';
+            formIsValid = false;
+        }
+
+
+        if (!formIsValid) {
+            event.preventDefault(); // Detener el envío si hay errores de JS
+        }
+    });
+
+    // --- FUNCIONALIDAD DEL BOTÓN LIMPIAR ---
+    document.getElementById('limpiarFormulario').addEventListener('click', function() {
+        form.reset(); // Resetea el formulario a sus valores iniciales (old() si la página recargó)
+
+        // Luego, asegúrate de que todos los campos relevantes estén vacíos y sin errores
+        nombreEmpresaInput.value = '';
+        personaContactoInput.value = '';
+        correoInput.value = '';
+        direccionTextarea.value = '';
+        personaContactoSecundariaInput.value = '';
+
+        // Limpiar clases de validación y ocultar mensajes de feedback
+        document.querySelectorAll('.is-invalid').forEach(element => {
+            element.classList.remove('is-invalid');
+        });
+        document.querySelectorAll('.invalid-feedback').forEach(element => {
+            element.style.display = 'none';
+            element.removeAttribute('data-laravel-error'); // Quitar marcador de error de Laravel
+            // Restaurar mensajes por defecto (opcional, pero buena práctica si el contenido cambia)
+            if (element.id === 'nombre_empresa-feedback') element.textContent = 'Este campo es obligatorio.';
+            if (element.id === 'pais_origen-feedback') element.textContent = 'Por favor, seleccione el país de origen.';
+            if (element.id === 'persona_contacto-feedback') element.textContent = 'Este campo es obligatorio y solo puede contener letras.';
+            if (element.id === 'correo_electronico-feedback') element.textContent = 'Este campo es obligatorio y debe ser un correo válido.';
+            if (element.id === 'telefono_contacto-feedback') element.textContent = 'Este campo es obligatorio y debe incluir el código de país (ej. +504) y tener entre 8 y 12 caracteres (incluyendo el +).';
+            if (element.id === 'direccion-feedback') element.textContent = 'Este campo es obligatorio.';
+            if (element.id === 'marcas-feedback') element.textContent = 'Por favor, seleccione al menos una marca.';
+            if (element.id === 'tipo_autopartes-feedback') element.textContent = 'Por favor, seleccione al menos un tipo de autoparte.';
+            if (element.id === 'persona_contacto_secundaria-feedback') element.textContent = 'Solo se permiten letras y espacios, máximo 32 caracteres.';
+            if (element.id === 'telefono_contacto_secundario-feedback') element.textContent = 'El teléfono debe incluir el código de país (ej. +504) y tener entre 8 y 12 caracteres (incluyendo el +).';
+        });
+
+        // Limpiar Select2 manualmente y quitar clase de validación visual
+        $('#marcas, #tipo_autopartes').val(null).trigger('change');
+        $('.is-invalid-select2').removeClass('is-invalid-select2');
+
+        // Restablecer el select de país a la opción por defecto y luego disparar su evento change
+        // Esto limpiará automáticamente los campos de teléfono o los dejará con el código del país si la opción es la placeholder
+        paisOrigenSelect.value = ''; // Selecciona la opción vacía
+        paisOrigenSelect.dispatchEvent(new Event('change')); // Dispara el evento para actualizar los teléfonos
+    });
+
+    // --- MANEJO DE ERRORES DE LARAVEL AL CARGAR LA PÁGINA ---
+    document.querySelectorAll('.form-control.is-invalid, textarea.is-invalid, .form-select.is-invalid').forEach(function(element) {
+        let feedbackElement;
+        if (element.id && document.getElementById(element.id + '-feedback')) {
+            feedbackElement = document.getElementById(element.id + '-feedback');
+        } else if (element.tagName === 'SELECT') {
+            // Para Select2, el feedback puede estar junto al .select2-container
+            $(element).next('.select2-container').find('.select2-selection').addClass('is-invalid-select2');
+            feedbackElement = document.getElementById(element.id + '-feedback');
+        } else {
+            feedbackElement = element.nextElementSibling;
+        }
+
+        if (feedbackElement && feedbackElement.classList.contains('invalid-feedback')) {
+            feedbackElement.style.display = 'block';
+            feedbackElement.setAttribute('data-laravel-error', 'true'); // Marca que es un error de Laravel
+        }
+    });
+
+    // --- LISTENER GENERAL PARA LIMPIAR VALIDACIÓN CUANDO EL USUARIO CORRIGE ---
+    document.querySelectorAll('.form-control, textarea').forEach(input => {
         input.addEventListener('input', function() {
             if (this.classList.contains('is-invalid')) {
-                this.classList.remove('is-invalid');
-                const feedbackId = this.id + '-feedback';
-                const feedbackElement = document.getElementById(feedbackId);
-                if (feedbackElement) {
-                    feedbackElement.style.display = 'none';
+                let shouldClear = true;
+
+                // Para campos obligatorios, no limpiar la validación si el campo sigue vacío
+                if (this.hasAttribute('required') && this.value.trim().length === 0) {
+                    shouldClear = false;
+                } else if (this.id === 'nombre_empresa') {
+                    if (this.value.length > 30) shouldClear = false;
+                } else if (this.id === 'persona_contacto' || this.id === 'persona_contacto_secundaria') {
+                    if (!regexSoloLetrasEspacios.test(this.value) || this.value.length > 32) shouldClear = false;
+                } else if (this.id === 'telefono_contacto' || this.id === 'telefono_contacto_secundario') {
+                    const regexTelefonoFullCheck = /^\+\d{7,11}$/;
+                    if (this.value.trim().length > 0 && (!regexTelefonoFullCheck.test(this.value.trim()) || this.value.length < 8 || this.value.length > 12)) shouldClear = false;
+                } else if (this.id === 'correo_electronico') {
+                    const regexCorreoCheck = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+                    if (!regexCorreoCheck.test(this.value.trim()) || this.value.length > 30) shouldClear = false;
+                } else if (this.id === 'direccion') {
+                    if (this.value.length > 150) shouldClear = false;
+                }
+
+                if (shouldClear) {
+                    this.classList.remove('is-invalid');
+                    const feedbackElement = document.getElementById(this.id + '-feedback');
+                    if (feedbackElement) {
+                        feedbackElement.style.display = 'none';
+                        feedbackElement.removeAttribute('data-laravel-error');
+                        // Restaurar el mensaje por defecto si se limpió el error de Laravel
+                        if (feedbackElement.id === 'nombre_empresa-feedback') feedbackElement.textContent = 'Este campo es obligatorio.';
+                        // ... y así para los demás mensajes por defecto si son relevantes
+                    }
                 }
             }
         });
-        if (input.tagName === 'SELECT') {
-            $(input).on('change', function() {
-                if (this.classList.contains('is-invalid')) {
-                    this.classList.remove('is-invalid');
-                }
-            });
+    });
+
+    // Listener para select/Select2 para limpiar validación
+    $('#pais_origen, #marcas, #tipo_autopartes').on('change', function() {
+        if (this.classList.contains('is-invalid')) { // Para select HTML normal
+            this.classList.remove('is-invalid');
+            const feedbackElement = document.getElementById(this.id + '-feedback');
+            if (feedbackElement) {
+                feedbackElement.style.display = 'none';
+                feedbackElement.removeAttribute('data-laravel-error');
+            }
+        }
+        // Para el contenedor de Select2 (la parte visual)
+        const select2Container = $(this).data('select2') ? $(this).next('.select2-container').find('.select2-selection') : null;
+        if (select2Container && select2Container.hasClass('is-invalid-select2')) {
+            select2Container.removeClass('is-invalid-select2');
+            const feedbackElement = document.getElementById(this.id + '-feedback');
+            if (feedbackElement) {
+                feedbackElement.style.display = 'none';
+                feedbackElement.removeAttribute('data-laravel-error');
+            }
         }
     });
 });
 </script>
-@endsection
+</body>
+</html>

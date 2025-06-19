@@ -19,6 +19,11 @@ Route::get('/', function () {
     return view('welcome');
 })->name('welcome');
 
+// Rutas para autocompletado
+Route::get('/empleados/autocomplete', [EmpleadoController::class, 'autocomplete'])->name('empleados.autocomplete');
+Route::get('/proveedores/autocomplete', [ProveedorController::class, 'autocomplete'])->name('proveedores.autocomplete');
+
+// Rutas para menús
 Route::get('/empleados/menu', function () {
     return view('empleados.menu');
 })->name('empleados.menu');
@@ -27,5 +32,6 @@ Route::get('/proveedores/menu', function () {
     return view('proveedores.menu');
 })->name('proveedores.menu');
 
+// Rutas de recursos (CRUD)
 Route::resource('empleados', EmpleadoController::class);
 Route::resource('proveedores', ProveedorController::class);
