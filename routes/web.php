@@ -4,16 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\EmpleadoController;
 use App\Http\Controllers\ProveedorController;
 use App\Http\Controllers\ProductoController;
-
-/*
-|--------------------------------------------------------------------------
-| Web Routes
-|--------------------------------------------------------------------------
-|
-| Aquí puedes registrar las rutas web de tu aplicación. Estas rutas
-| serán cargadas por RouteServiceProvider y asignadas al grupo "web".
-|
-*/
+use App\Http\Controllers\FacturaController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -40,3 +31,4 @@ Route::get('/seleccionar-operacion', function () {
 Route::resource('empleados', EmpleadoController::class);
 Route::resource('proveedores', ProveedorController::class);
 Route::resource('productos', ProductoController::class);
+Route::resource('facturas', FacturaController::class)->except(['edit', 'update', 'destroy']);

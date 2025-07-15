@@ -9,6 +9,7 @@
     </div>
 
     <div class="row justify-content-center">
+        {{-- Sistema de Empleados --}}
         <div class="col-md-5 mb-4">
             <div class="card h-100">
                 <div class="card-body text-center">
@@ -22,6 +23,7 @@
             </div>
         </div>
 
+        {{-- Sistema de Proveedores --}}
         <div class="col-md-5 mb-4">
             <div class="card h-100">
                 <div class="card-body text-center">
@@ -35,7 +37,7 @@
             </div>
         </div>
 
-        {{-- Nueva tarjeta: Sistema de Productos --}}
+        {{-- Sistema de Productos --}}
         <div class="col-md-5 mb-4">
             <div class="card h-100">
                 <div class="card-body text-center">
@@ -45,6 +47,20 @@
                     <h3 class="card-title mb-4">Sistema de Productos</h3>
                     <p class="card-text mb-4">Gestione el inventario de autopartes, incluyendo nombre, marca, modelo, año, precio y stock.</p>
                     <a href="{{ route('productos.menu') }}" class="btn btn-warning btn-lg w-100 text-white">Acceder</a>
+                </div>
+            </div>
+        </div>
+
+        {{-- Sistema de Facturas --}}
+        <div class="col-md-5 mb-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <div class="system-icon mb-4">
+                        <i class="fas fa-file-invoice-dollar fa-4x text-info"></i>
+                    </div>
+                    <h3 class="card-title mb-4">Sistema de Facturas</h3>
+                    <p class="card-text mb-4">Gestione las facturas de venta, agregue productos y visualice detalles de cada factura.</p>
+                    <a href="{{ route('facturas.index') }}" class="btn btn-info btn-lg w-100">Acceder</a>
                 </div>
             </div>
         </div>

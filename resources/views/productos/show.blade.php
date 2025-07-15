@@ -13,8 +13,7 @@
                 <p class="card-text"><strong>Marca:</strong> {{ $producto->marca }}</p>
                 <p class="card-text"><strong>Modelo:</strong> {{ $producto->modelo }}</p>
                 <p class="card-text"><strong>Año:</strong> {{ $producto->anio }}</p>
-                <p class="card-text"><strong>Precio:</strong> L {{ number_format($producto->precio, 2) }}</p>
-                <p class="card-text"><strong>Stock:</strong> {{ $producto->stock }}</p>
+
                 <p class="card-text"><strong>Categoría:</strong> {{ $producto->categoria }}</p>
 
                 <a href="{{ route('productos.index') }}" class="btn btn-outline-light mt-4">
