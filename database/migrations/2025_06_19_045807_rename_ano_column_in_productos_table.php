@@ -7,7 +7,7 @@ return new class extends Migration {
     public function up(): void
     {
         Schema::table('productos', function (Blueprint $table) {
-            $table->renameColumn('año', 'anio');
+            $table->renameColumn('anio', 'año');
         });
     }
 

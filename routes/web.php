@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\EmpleadoController;
 use App\Http\Controllers\ProveedorController;
 use App\Http\Controllers\ProductoController;
+use App\Http\Controllers\ClienteController;
 
 /*
 |--------------------------------------------------------------------------
@@ -40,3 +41,10 @@ Route::get('/seleccionar-operacion', function () {
 Route::resource('empleados', EmpleadoController::class);
 Route::resource('proveedores', ProveedorController::class);
 Route::resource('productos', ProductoController::class);
+
+// Clientes
+Route::get('/clientes/menu', function () {
+    return view('clientes.menu');
+})->name('clientes.menu');
+
+Route::resource('clientes', controller: ClienteController::class);

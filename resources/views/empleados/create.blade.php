@@ -230,7 +230,7 @@
                         </div>
                     </div>
 
-                    <button type="submit" class="btn btn-primary">Guardar</button>
+                    <button type="submit" class="btn btn-success">Guardar</button>
                     <button type="button" class="btn btn-secondary ms-2" id="limpiarFormulario">Limpiar</button>
                     <a href="{{ route('empleados.index') }}" class="btn btn-outline-danger ms-2">Cancelar</a>
                 </form>

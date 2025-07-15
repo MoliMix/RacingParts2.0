@@ -1,0 +1,80 @@
+@extends('layouts.app')
+
+@section('title', 'Sistema de Empleados')
+
+@section('content')
+<div class="text-center mb-5">
+    <h1 class="display-4 mb-4">Sistema de Clientes</h1>
+    <p class="lead">Seleccione la operación que desea realizar:</p>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-md-5 mb-4">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <div class="system-icon mb-4">
+                    <i class="fas fa-user fa-4x text-primary"></i> <!-- Cambiado a icono de usuario -->
+                </div>
+                <h3 class="card-title mb-4">Registrar Cliente</h3>
+                <p class="card-text mb-4">Registre un nuevo cliente en el sistema con toda su información personal.</p>
+                <a href="{{ route('clientes.create') }}" class="btn btn-primary btn-lg w-100">Registrar</a>
+            </div>
+        </div>
+    </div>
+    
+   <div class="col-md-5 mb-4">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <div class="system-icon mb-4">
+                    <i class="fas fa-list fa-4x text-primary"></i>
+                </div>
+                <h3 class="card-title mb-4">Lista de Clientes</h3>
+                <p class="card-text mb-4">Visualice y gestione la lista completa de clientes registrados en el sistema.</p>
+                <a href="{{ route('clientes.index') }}" class="btn btn-primary btn-lg w-100">Ver Lista</a>
+            </div>
+        </div>
+    </div> 
+</div>
+
+    
+    
+</div>
+
+
+<div class="text-center mt-4">
+    <a href="{{ route('welcome') }}" class="btn btn-outline-light btn-lg">
+        <i class="fas fa-arrow-left me-2"></i>Volver al inicio
+    </a>
+</div>
+
+<style>
+    .card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        border: none;
+        border-radius: 15px;
+    }
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+    }
+    .system-icon {
+        height: 120px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .card-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+    }
+    .card-text {
+        font-size: 1.1rem;
+        color: #6c757d;
+    }
+    .btn {
+        padding: 12px 30px;
+        font-weight: 500;
+        border-radius: 8px;
+    }
+</style>
+@endsection 
