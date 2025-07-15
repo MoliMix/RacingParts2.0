@@ -1,179 +1,322 @@
-@extends('layouts.app')
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Lista de Proveedores</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        body {
+            background-color: #121212; /* Fondo oscuro */
+            color: #f1f1f1; /* Texto claro */
+            padding: 20px; /* Espacio alrededor del contenido */
+        }
 
-@section('title', 'Lista de Proveedores')
+        h2, h3 {
+            color: #e0e0e0;
+        }
 
-@section('content')
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h2 class="mb-0">Lista de Proveedores</h2>
-    <span class="text-muted">Total: <strong>{{ $proveedores->total() }}</strong></span>
+        .alert {
+            margin-top: 15px;
+        }
+
+        .btn-primary {
+            background-color: #4caf50; /* Verde principal */
+            border-color: #4caf50;
+        }
+        .btn-primary:hover {
+            background-color: #43a047;
+            border-color: #43a047;
+        }
+
+        .btn-info {
+            background-color: #2196f3; /* Azul para "Ver más" */
+            border-color: #2196f3;
+        }
+        .btn-info:hover {
+            background-color: #1976d2;
+            border-color: #1976d2;
+        }
+
+        .btn-warning {
+            background-color: #ffc107; /* Amarillo para "Editar" */
+            border-color: #ffc107;
+            color: #212529; /* Texto oscuro para el botón amarillo */
+        }
+        .btn-warning:hover {
+            background-color: #e0a800;
+            border-color: #e0a800;
+        }
+
+        .btn-outline-light {
+            color: #f8f9fa;
+            border-color: #f8f9fa;
+        }
+        .btn-outline-light:hover {
+            background-color: #f8f9fa;
+            color: #212529;
+        }
+
+        .btn-secondary {
+            background-color: #6c757d;
+            border-color: #6c757d;
+            color: #f1f1f1;
+        }
+        .btn-secondary:hover {
+            background-color: #5a6268;
+            border-color: #545b62;
+        }
+
+        .table-container {
+            background-color: #1e1e1e;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.6);
+        }
+
+        .table-dark {
+            --bs-table-bg: #212121;
+            --bs-table-striped-bg: #2c2c2c;
+            --bs-table-hover-bg: #3a3a3a;
+            --bs-table-color: #f1f1f1;
+            border-color: #444;
+        }
+        .table thead th {
+            border-bottom: 2px solid #555;
+            color: #e0e0e0;
+        }
+        .table tbody td {
+            border-top: 1px solid #333;
+            padding: 0.75rem;
+            word-break: break-word;
+            overflow-wrap: break-word;
+        }
+
+        /* ESTILOS MODIFICADOS PARA EL INPUT DE BÚSQUEDA */
+        .search-input::placeholder {
+            color: #6c757d !important; /* Color más oscuro para el placeholder en fondo blanco */
+            opacity: 0.8;
+        }
+        .search-input {
+            background-color: #ffffff !important; /* Fondo blanco */
+            color: #212529 !important; /* Texto oscuro */
+            border-color: #ced4da !important; /* Borde claro */
+        }
+        .search-input:focus {
+            background-color: #ffffff !important; /* Fondo blanco al enfocar */
+            color: #212529 !important; /* Texto oscuro al enfocar */
+            border-color: #0d6efd !important;
+            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25) !important;
+        }
+
+        .pagination {
+            --bs-pagination-color: #f1f1f1;
+            --bs-pagination-bg: #343a40;
+            --bs-pagination-border-color: #495057;
+            --bs-pagination-hover-color: #ffffff;
+            --bs-pagination-hover-bg: #495057;
+            --bs-pagination-hover-border-color: #495057;
+            --bs-pagination-focus-shadow: none;
+            --bs-pagination-active-color: #ffffff;
+            --bs-pagination-active-bg: #0d6efd;
+            --bs-pagination-active-border-color: #0d6efd;
+            --bs-pagination-disabled-color: #6c757d;
+            --bs-pagination-disabled-bg: #343a40;
+            --bs-pagination-disabled-border-color: #495057;
+        }
+
+        .page-item .page-link {
+            border-radius: 0.25rem;
+            margin: 0 2px;
+            transition: all 0.2s ease-in-out;
+        }
+        .page-item .page-link:hover {
+            transform: translateY(-1px);
+        }
+        .page-item.active .page-link {
+            font-weight: bold;
+        }
+        .page-item.disabled .page-link {
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        .text-pagination-summary {
+            color: #ced4da;
+            font-size: 0.95rem;
+            align-self: center;
+            margin: 0 15px;
+            font-weight: 400;
+        }
+        /* Ajuste de tamaño de fuente para los botones sm */
+        .btn-sm {
+            padding: .25rem .5rem;
+            font-size: .7rem; /* Tamaño de fuente más pequeño para los botones */
+            border-radius: .2rem;
+        }
+    </style>
+</head>
+<body>
+<div class="container py-5">
+    <div class="table-container">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="mb-0">Lista de Proveedores</h2>
+            <span class="text-pagination-summary">Total: <strong>{{ $proveedores->total() }}</strong></span>
+        </div>
+
+        @if(session('success'))
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                {{ session('success') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        @endif
+
+        @if(session('error'))
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                {{ session('error') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        @endif
+
+        <a href="{{ route('proveedores.create') }}" class="btn btn-primary mb-3">+ Nuevo Proveedor</a>
+
+        <form action="{{ route('proveedores.index') }}" method="GET" class="mb-3" id="searchForm">
+            <div class="input-group">
+                <input type="text" name="search" id="searchInput" class="form-control search-input" placeholder="Buscar por empresa, país o teléfono" value="{{ request('search') }}" list="providerSuggestions">
+                <datalist id="providerSuggestions"></datalist>
+                <button type="submit" class="btn btn-primary">Buscar</button>
+                <button type="button" class="btn btn-secondary" id="clearSearchBtn" style="{{ request('search') ? 'display: block;' : 'display: none;' }}">Limpiar</button>
+            </div>
+        </form>
+
+        <div class="table-responsive">
+            <table class="table table-dark table-striped table-hover text-center align-middle">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Empresa</th>
+                        <th>País</th>
+                        <th>Teléfono</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse ($proveedores as $proveedor)
+                        <tr>
+                            <td>{{ $loop->iteration + ($proveedores->currentPage() - 1) * $proveedores->perPage() }}</td>
+                            <td>{{ $proveedor->nombre_empresa }}</td>
+                            <td>{{ $proveedor->pais_origen }}</td>
+                            <td>{{ $proveedor->telefono_contacto }}</td>
+                            <td>
+                                <div class="d-flex justify-content-center gap-1">
+                                    <a href="{{ route('proveedores.show', $proveedor->id) }}" class="btn btn-info btn-sm">Ver más</a>
+                                    <a href="{{ route('proveedores.edit', $proveedor->id) }}" class="btn btn-warning btn-sm">Editar</a>
+                                </div>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="5">No hay proveedores registrados que coincidan con la búsqueda.</td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+
+        <div class="d-flex justify-content-center mt-4 mb-4">
+            {{ $proveedores->withQueryString()->links('vendor.pagination.bootstrap-5') }}
+        </div>
+
+        <a href="{{ url('/') }}" class="btn btn-outline-light mt-3">Inicio</a>
+    </div>
 </div>
 
-@if(session('success'))
-    <div class="alert alert-success alert-dismissible fade show" role="alert">
-        {{ session('success') }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
-@endif
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchInput = document.getElementById('searchInput');
+        const providerSuggestions = document.getElementById('providerSuggestions');
+        const clearSearchBtn = document.getElementById('clearSearchBtn');
+        const searchForm = document.getElementById('searchForm');
 
-@if(session('error'))
-    <div class="alert alert-danger alert-dismissible fade show" role="alert">
-        {{ session('error') }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
-@endif
+        let debounceTimeout;
 
-<a href="{{ route('proveedores.create') }}" class="btn btn-primary mb-3">+ Nuevo Proveedor</a>
+        // Mostrar/ocultar botón "Limpiar" al cargar la página si hay texto en el input
+        if (searchInput.value.trim() !== '') {
+            clearSearchBtn.style.display = 'block';
+        } else {
+            clearSearchBtn.style.display = 'none';
+        }
 
-<form action="{{ route('proveedores.index') }}" method="GET" class="mb-3">
-    <div class="input-group">
-        <input type="text" name="search" class="form-control search-input" placeholder="Buscar por nombre de empresa, país o persona de contacto" value="{{ request('search') }}">
-        <button type="submit" class="btn btn-primary">Buscar</button>
-    </div>
-</form>
+        // Manejador para el botón "Limpiar"
+        clearSearchBtn.addEventListener('click', function() {
+            searchInput.value = '';
+            clearSearchBtn.style.display = 'none';
+            searchForm.submit(); // Envía el formulario para recargar sin búsqueda
+        });
 
-<div class="table-responsive">
-    <table class="table table-dark table-striped table-hover text-center align-middle">
-        <thead>
-            <tr>
-                <th>#</th>
-                <th>Empresa</th>
-                <th>País</th>
-                <th>Persona de Contacto</th>
-                <th>Teléfono</th>
-                <th>Acciones</th>
-            </tr>
-        </thead>
-        <tbody>
-            @forelse ($proveedores as $proveedor)
-                <tr>
-                    <td>{{ $loop->iteration + ($proveedores->currentPage() - 1) * $proveedores->perPage() }}</td>
-                    <td>{{ $proveedor->nombre_empresa }}</td>
-                    <td>{{ $proveedor->pais_origen }}</td>
-                    <td>{{ $proveedor->persona_contacto }}</td>
-                    <td>{{ $proveedor->telefono_contacto }}</td>
-                    <td>
-                        <a href="{{ route('proveedores.show', $proveedor->id) }}" class="btn btn-info btn-sm">Ver más</a>
-                    </td>
-                </tr>
-            @empty
-                <tr>
-                    <td colspan="6">No hay proveedores registrados.</td>
-                </tr>
-            @endforelse
-        </tbody>
-    </table>
-</div>
+        // Manejador para el input de búsqueda (autocompletado)
+        searchInput.addEventListener('input', function() {
+            // Mostrar/ocultar botón "Limpiar" mientras se escribe
+            if (this.value.trim() !== '') {
+                clearSearchBtn.style.display = 'block';
+            } else {
+                clearSearchBtn.style.display = 'none';
+            }
 
----
+            clearTimeout(debounceTimeout); // Limpiar el timeout anterior
+            debounceTimeout = setTimeout(() => {
+                const query = this.value.trim();
 
-{{-- Paginación bonita y centrada (usa la vista personalizada que definimos) --}}
-<div class="d-flex justify-content-center mt-4 mb-4">
-    {{ $proveedores->withQueryString()->links('vendor.pagination.bootstrap-5') }} {{-- Asegúrate de usar 'bootstrap-5' o el nombre de tu archivo personalizado --}}
-</div>
+                // Solo hacer la petición si la consulta tiene al menos 2 caracteres
+                if (query.length > 1) {
+                    fetch(`/proveedores/autocomplete?query=${encodeURIComponent(query)}`)
+                        .then(response => {
+                            if (!response.ok) {
+                                return response.text().then(text => {
+                                    throw new Error(`HTTP error! status: ${response.status}, body: ${text}`);
+                                });
+                            }
+                            return response.json();
+                        })
+                        .then(data => {
+                            providerSuggestions.innerHTML = ''; // Limpiar sugerencias anteriores
+                            if (data.length > 0) {
+                                data.forEach(item => {
+                                    const option = document.createElement('option');
+                                    option.value = item;
+                                    providerSuggestions.appendChild(option);
+                                });
+                            }
+                        })
+                        .catch(error => console.error('Error al obtener datos de autocompletado de proveedores:', error));
+                } else {
+                    providerSuggestions.innerHTML = ''; // Limpiar sugerencias si la consulta es muy corta
+                }
+            }, 300); // Retraso de 300ms (debounce) para evitar muchas peticiones
+        });
 
----
+        // NUEVO: Manejador para detectar cuándo se selecciona una sugerencia y enviar el formulario
+        searchInput.addEventListener('change', function() {
+            // Este evento 'change' se dispara cuando el usuario selecciona una opción de la datalist
+            // o cuando el valor del input cambia y el foco sale.
+            // Si el valor del input coincide con una opción del datalist, se considera una selección.
+            
+            // Un pequeño retraso asegura que el valor del input se haya actualizado
+            // después de la selección del datalist.
+            setTimeout(() => {
+                const selectedValue = this.value;
+                const options = Array.from(providerSuggestions.options).map(option => option.value);
 
-<a href="{{ route('welcome') }}" class="btn btn-outline-light mt-3">Inicio</a>
-
-<style>
-    /* Estilos para el campo de búsqueda */
-    .search-input::placeholder {
-        color: #ffffff !important;
-        opacity: 0.7;
-    }
-    .search-input {
-        background-color: #343a40 !important;
-        color: #ffffff !important;
-        border-color: #6c757d !important;
-    }
-    .search-input:focus {
-        background-color: #343a40 !important;
-        color: #ffffff !important;
-        border-color: #0d6efd !important;
-        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25) !important;
-    }
-
-    /* Estilos para la paginación personalizada (NUEVOS ESTILOS) */
-    .pagination-custom {
-        display: flex;
-        padding-left: 0;
-        border-radius: 0.25rem;
-    }
-
-    .pagination-custom li {
-        margin: 0 4px;
-        list-style: none; /* Asegura que no haya viñetas de lista */
-    }
-
-    .page-link-custom {
-        position: relative;
-        display: block;
-        padding: 0.5rem 0.75rem;
-        color: #0d6efd;
-        background-color: #343a40;
-        border: 1px solid #454d55;
-        border-radius: 0.25rem;
-        text-decoration: none;
-        transition: all 0.3s ease;
-        font-weight: 500; /* Un poco más de grosor en el texto */
-    }
-
-    .page-link-custom:hover {
-        color: #ffffff;
-        background-color: #0d6efd;
-        border-color: #0d6efd;
-        transform: translateY(-1px);
-        box-shadow: 0 4px 8px rgba(13, 110, 253, 0.2); /* Sombra sutil al pasar el ratón */
-    }
-
-    .page-link-custom.active,
-    .pagination-custom li.active .page-link-custom {
-        color: #ffffff;
-        background-color: #0d6efd;
-        border-color: #0d6efd;
-        font-weight: bold; /* Más énfasis en la página activa */
-    }
-
-    .pagination-custom li.disabled .page-link-custom {
-        color: #6c757d;
-        background-color: #343a40;
-        border-color: #454d55;
-        cursor: not-allowed;
-        opacity: 0.6;
-        transform: none;
-        box-shadow: none;
-    }
-
-    /* Estilos para el texto de resumen */
-    .text-sm.text-gray-700.leading-5.text-muted {
-        color: #ced4da !important;
-        font-size: 0.875rem;
-        align-self: center; /* Alinea el texto verticalmente en el centro */
-    }
-
-    /* Estilo para los botones de paginación en móviles */
-    .btn-dark-outline {
-        color: #ced4da;
-        border-color: #495057;
-        background-color: #343a40;
-        text-decoration: none;
-        padding: 0.5rem 0.75rem;
-        border-radius: 0.25rem;
-        transition: all 0.3s ease;
-    }
-
-    .btn-dark-outline:hover {
-        color: #ffffff;
-        background-color: #495057;
-        border-color: #495057;
-    }
-
-    .btn-dark-outline.disabled {
-        color: #6c757d;
-        background-color: #343a40;
-        border-color: #495057;
-        opacity: 0.6;
-        cursor: not-allowed;
-    }
-</style>
-@endsection
+                if (options.includes(selectedValue)) {
+                    // Si el valor actual del input es una de las sugerencias,
+                    // significa que el usuario seleccionó una.
+                    searchForm.submit(); // Envía el formulario para buscar
+                }
+            }, 0); // Retraso mínimo
+        });
+    });
+</script>
+</body>
+</html>
