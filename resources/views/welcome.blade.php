@@ -9,6 +9,7 @@
     </div>
 
     <div class="row justify-content-center">
+        {{-- Sistema de Empleados --}}
         <div class="col-md-5 mb-4">
             <div class="card h-100">
                 <div class="card-body text-center">
@@ -23,6 +24,7 @@
             </div>
         </div>
 
+        {{-- Sistema de Proveedores --}}
         <div class="col-md-5 mb-4">
             <div class="card h-100">
                 <div class="card-body text-center">
@@ -37,7 +39,7 @@
             </div>
         </div>
 
-        {{-- Nueva tarjeta: Sistema de Productos --}}
+        {{-- Sistema de Productos --}}
         <div class="col-md-5 mb-4">
             <div class="card h-100">
                 <div class="card-body text-center">
@@ -51,26 +53,6 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-5 mb-4">
-    <div class="card h-100">  {{-- Removed shadow-sm --}}
-        <div class="card-body text-center">
-            <div class="system-icon mb-4">
-                {{-- Changed color: red; to Bootstrap text-danger class for consistency --}}
-                <i class="fas fa-users fa-4x text-danger"></i>
-            </div>
-            {{-- Removed font-weight-bold and aligned mb-4 with the other card --}}
-            <h3 class="card-title mb-4">Gestión de Clientes</h3>
-            {{-- Removed text-white from p tag to match default text color --}}
-            <p class="card-text mb-4">Administra la información de los clientes, incluyendo sus datos de
-                contacto, historial de compras y preferencias.</p>
-            {{-- Changed to a standard Bootstrap button class, e.g., btn-danger --}}
-            <a href="{{ route('clientes.menu') }}" class="btn btn-danger btn-lg w-100 text-white">Acceder</a>
-        </div>
-    </div>
-</div>
-
-
-
     </div>
 
     <style>

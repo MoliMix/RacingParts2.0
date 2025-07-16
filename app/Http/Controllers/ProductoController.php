@@ -11,23 +11,31 @@ class ProductoController extends Controller
     public function index(Request $request)
     {
         $query = Producto::query();
-        $totalProductos = Producto::count();
-        $productosFiltrados = $totalProductos; // Valor por defecto
 
-        if ($request->has('search') && $request->filled('search')) {
-            $search = $request->input('search');
-
-            $query->where(function ($q) use ($search) {
-                $q->where('nombre', 'like', "%$search%")
-                    ->orWhere('descripcion', 'like', "%$search%")
-                    ->orWhere('marca', 'like', "%$search%")
-                    ->orWhere('modelo', 'like', "%$search%");
-            });
-
-            $productosFiltrados = $query->count(); // Cuántos se encontraron con filtro
+        if ($request->filled('nombre')) {
+            $query->where('nombre', 'like', '%' . $request->nombre . '%');
         }
 
-        $productos = $query->orderBy('id', 'desc')->paginate(10);
+        if ($request->filled('modelo')) {
+            $query->where('modelo', 'like', '%' . $request->modelo . '%');
+        }
+
+        if ($request->filled('anio')) {
+            $query->where('anio', $request->anio);
+        }
+
+        if ($request->filled('marca')) {
+            $query->where('marca', $request->marca);
+        }
+
+        if ($request->filled('categoria')) {
+            $query->where('categoria', $request->categoria);
+        }
+
+        $productosFiltrados = $query->count();
+        $totalProductos = Producto::count();
+
+        $productos = $query->orderBy('id', 'desc')->paginate(5);
 
         return view('productos.index', compact('productos', 'productosFiltrados', 'totalProductos'));
     }
@@ -40,15 +48,26 @@ class ProductoController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'nombre' => ['required', 'string', 'max:20', 'regex:/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/'],
-            'descripcion' => ['required', 'string', 'max:100'],
+            'nombre' => ['required', 'string', 'max:20', 'regex:/^[a-zA-ZáéíóúÁÉÍÓÚñÑ][a-zA-ZáéíóúÁÉÍÓÚñÑ\s]{0,19}$/'],
+            'descripcion' => ['required', 'string', 'max:100', 'regex:/^[a-zA-ZáéíóúÁÉÍÓÚñÑ][a-zA-Z0-9\sáéíóúÁÉÍÓÚñÑ]{0,99}$/'],
             'marca' => ['required', Rule::in(['Toyota', 'Honda', 'Ford', 'Chevrolet', 'Nissan', 'Volkswagen', 'Hyundai', 'Mazda', 'Kia'])],
-            'modelo' => ['required', 'string', 'max:20', 'regex:/^[a-zA-Z0-9]+$/'],
-            'anio' => ['required', 'integer', 'min:1990', 'max:' . date('Y')],
-            'precio' => ['required', 'numeric', 'min:0.01', 'max:99999'],
-            'stock' => ['required', 'integer', 'min:0'],
-            'categoria' => ['required', 'string', Rule::in(['Motor', 'Frenos', 'Suspensión', 'Eléctrico', 'Accesorios'])],
+            'modelo' => ['required', 'string', 'max:50', 'regex:/^[a-zA-Z][a-zA-Z0-9\s\-]{0,49}$/'],
+            'anio' => ['required', 'digits:4', 'integer', 'min:1990', 'max:' . date('Y')],
+            'categoria' => ['required', Rule::in(['Motor', 'Frenos', 'Suspensión', 'Eléctrico', 'Accesorios'])],
         ]);
+
+        $existe = Producto::where('nombre', $validated['nombre'])
+            ->where('marca', $validated['marca'])
+            ->where('modelo', $validated['modelo'])
+            ->where('anio', $validated['anio'])
+            ->where('categoria', $validated['categoria'])
+            ->exists();
+
+        if ($existe) {
+            return back()
+                ->withErrors(['duplicado' => 'Ya existe un producto con esa combinación de nombre, marca, modelo, año y categoría.'])
+                ->withInput();
+        }
 
         Producto::create($validated);
 
@@ -58,15 +77,27 @@ class ProductoController extends Controller
     public function update(Request $request, Producto $producto)
     {
         $validated = $request->validate([
-            'nombre' => ['required', 'string', 'max:20', 'regex:/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/'],
-            'descripcion' => ['required', 'string', 'max:100'],
-            'marca' => ['required', 'string', 'max:20', 'regex:/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/'],
-            'modelo' => ['required', 'string', 'max:20', 'regex:/^[a-zA-Z0-9]+$/'],
-            'anio' => ['required', 'digits:4', 'integer', 'min:1900', 'max:' . date('Y')],
-            'precio' => ['required', 'numeric', 'min:0.01', 'max:99999.99'],
-            'stock' => ['required', 'integer', 'min:0', 'max:999'],
+            'nombre' => ['required', 'string', 'max:20', 'regex:/^[^\s\d][a-zA-ZáéíóúÁÉÍÓÚñÑ0-9\s]{0,19}$/'],
+            'descripcion' => ['required', 'string', 'max:100', 'regex:/^[^\s\d][a-zA-ZáéíóúÁÉÍÓÚñÑ0-9\s]*$/'],
+            'marca' => ['required', 'string', Rule::in(['Toyota', 'Honda', 'Ford', 'Chevrolet', 'Nissan', 'Volkswagen', 'Hyundai', 'Mazda', 'Kia'])],
+            'modelo' => ['required', 'string', 'max:50', 'regex:/^[^\s][a-zA-Z0-9\s\-]*$/'],
+            'anio' => ['required', 'digits:4', 'integer', 'min:1990', 'max:' . date('Y')],
             'categoria' => ['required', 'string', Rule::in(['Motor', 'Frenos', 'Suspensión', 'Eléctrico', 'Accesorios'])],
         ]);
+
+        $existe = Producto::where('nombre', $validated['nombre'])
+            ->where('marca', $validated['marca'])
+            ->where('modelo', $validated['modelo'])
+            ->where('anio', $validated['anio'])
+            ->where('categoria', $validated['categoria'])
+            ->where('id', '<>', $producto->id)
+            ->exists();
+
+        if ($existe) {
+            return back()
+                ->withErrors(['duplicado' => 'Ya existe un producto con esa combinación de nombre, marca, modelo, año y categoría.'])
+                ->withInput();
+        }
 
         $producto->update($validated);
 
@@ -75,13 +106,8 @@ class ProductoController extends Controller
 
     public function destroy($id)
     {
-        // Buscar producto por id
         $producto = Producto::findOrFail($id);
-
-        // Eliminar producto
         $producto->delete();
-
-        // Redireccionar con mensaje de éxito
         return redirect()->route('productos.index')->with('success', 'Producto eliminado correctamente.');
     }
 
@@ -90,11 +116,9 @@ class ProductoController extends Controller
         return view('productos.show', compact('producto'));
     }
 
-        public function edit($id)
+    public function edit($id)
     {
         $producto = Producto::findOrFail($id);
         return view('productos.edit', compact('producto'));
     }
-
-
 }

@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\EmpleadoController;
 use App\Http\Controllers\ProveedorController;
 use App\Http\Controllers\ProductoController;
+
 use App\Http\Controllers\ClienteController;
 
 /*
@@ -15,6 +16,7 @@ use App\Http\Controllers\ClienteController;
 | serán cargadas por RouteServiceProvider y asignadas al grupo "web".
 |
 */
+use App\Http\Controllers\FacturaController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -48,3 +50,4 @@ Route::get('/clientes/menu', function () {
 })->name('clientes.menu');
 
 Route::resource('clientes', controller: ClienteController::class);
+Route::resource('facturas', FacturaController::class)->except(['edit', 'update', 'destroy']);

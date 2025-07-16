@@ -15,8 +15,17 @@ class Producto extends Model
         'marca',
         'modelo',
         'anio',
-        'precio',
-        'stock',
         'categoria',
+        'precio',
     ];
+
+    /**
+     * Opcional: Define la relación uno a muchos inversa con DetalleFacturaVenta.
+     * Un Producto puede estar en muchos DetalleFacturaVenta.
+     * No es estrictamente necesaria para tu consulta actual, pero es buena práctica.
+     */
+    public function detallesFacturaVenta()
+    {
+        return $this->hasMany(DetalleFacturaVenta::class, 'producto_id');
+    }
 }
