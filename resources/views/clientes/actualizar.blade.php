@@ -157,7 +157,7 @@
                                 <label for="numero_id" class="form-label">Número de Identidad</label>
                                 <input type="text" class="form-control @error('numero_id') is-invalid @enderror" id="numero_id" name="numero_id"
                                     value="{{ old('numero_id', $cliente->numero_id) }}" required maxlength="15"> {{-- Ajusted maxlength to accommodate hyphens --}}
-                                <div class="invalid-feedback" id="numero_id-feedback">
+                                <div>
                                     El número de identidad debe contener 13 dígitos y ser un DNI hondureño válido (formato 0000-0000-00000).
                                 </div>
                                 @error('numero_id')

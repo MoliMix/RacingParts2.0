@@ -147,26 +147,31 @@
                         </div>
 
                         <div class="mb-3 col-md-6">
-                            <label for="anio" class="form-label">Año:</label>
-                            <input
-                                type="number"
-                                class="form-control @error('anio') is-invalid @enderror"
-                                id="anio"
-                                name="anio"
-                                value="{{ old('anio') }}"
-                                required
-                                min="1990"
-                                max="{{ date('Y') }}"
-                                maxlength="4"
-                                autocomplete="off"
-                            />
-                            <div class="invalid-feedback" id="anio-feedback">
-                                El año debe ser igual o mayor a 1990, no mayor al año actual.
-                            </div>
-                            @error('anio')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
+    <label for="anio" class="form-label">Año:</label>
+    <input
+        type="number"
+        class="form-control @error('anio') is-invalid @enderror"
+        id="anio"
+        name="anio"
+        value="{{ old('anio', isset($producto) ? $producto->anio : '') }}" {{-- Added for edit forms --}}
+        required
+        min="1990"
+        max="{{ date('Y') }}" {{-- Sets max to current year (e.g., 2025) --}}
+        autocomplete="off"
+        placeholder="Ej: 2024" {{-- Added a placeholder for user guidance --}}
+    >
+    {{-- Laravel's @error directive will automatically add the 'is-invalid' class and display the validation message --}}
+    @error('anio')
+        <div class="invalid-feedback">
+            {{ $message }}
+        </div>
+    @enderror
+    {{-- If you want a custom message always visible or only when no server-side error:
+         You could use JavaScript for client-side validation messages that appear before submission.
+         For simple HTML validation, the browser's default message might suffice,
+         or you can rely solely on Laravel's message.
+    --}}
+</div>
 
                         <div class="mb-3 col-md-6">
                             <label for="categoria" class="form-label">Categoría:</label>

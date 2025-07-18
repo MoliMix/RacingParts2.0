@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('clientes', function (Blueprint $table) {
             $table->id();
             $table->string('nombre_completo'); // Nombre completo del cliente
-            $table->string('numero_id', 13); 
+            $table->string('numero_id', 14); 
             $table->string('numero_telefono', 8); // Número de teléfono
             $table->string('correo_electronico'); // Correo electrónico
             $table->string('direccion_cliente'); // Dirección de envío

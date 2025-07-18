@@ -1,28 +1,37 @@
 <?php
+
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
+    /**
+     * Run the migrations.
+     */
     public function up(): void
-    {
-        Schema::create('productos', function (Blueprint $table) {
-            $table->id();
-            $table->string('nombre');
-            $table->text('descripcion')->nullable();
-            $table->string('marca');
-            $table->string('modelo');
-            $table->integer('anio'); // sin tilde
-            $table->decimal('precio', 10, 2);
-            $table->integer('stock');
-            $table->string('categoria', 50);
-            $table->timestamps();
-        });
-    }
+{
+    Schema::create('productos', function (Blueprint $table) {
+        $table->id();
+        $table->string('nombre');
+        $table->text('descripcion')->nullable();
+        $table->string('marca');
+        $table->string('modelo');
+        $table->integer('anio'); // Keep it as integer for "year"
+        $table->decimal('precio', 10, 2);
+        $table->integer('stock');
+        $table->string('categoria', 50);
+        $table->timestamps();
+    });
+}
 
+    /**
+     * Reverse the migrations.
+     */
     public function down(): void
     {
+        // This down() method correctly reverses the 'up()' method,
+        // which created the 'productos' table.
         Schema::dropIfExists('productos');
     }
 };
