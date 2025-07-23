@@ -9,15 +9,7 @@ class Producto extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
-        'nombre',
-        'descripcion',
-        'marca',
-        'modelo',
-        'anio',
-        'categoria',
-        'precio',
-    ];
+    protected $fillable = ['nombre', 'marca', 'modelo', 'anio', 'categoria', 'precio', 'stock'];
 
     /**
      * Opcional: Define la relación uno a muchos inversa con DetalleFacturaVenta.

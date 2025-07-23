@@ -6,6 +6,9 @@ use App\Http\Controllers\ProveedorController;
 use App\Http\Controllers\ProductoController;
 use App\Http\Controllers\FacturaController;
 
+
+Route::resource('facturas', FacturaController::class);
+
 Route::get('/', function () {
     return view('welcome');
 })->name('welcome');

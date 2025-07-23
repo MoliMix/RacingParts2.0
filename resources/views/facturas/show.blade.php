@@ -9,7 +9,6 @@
                 <h3 class="mb-0">
                     <i class="fas fa-file-invoice me-2"></i> Factura de Venta
                 </h3>
-                {{-- Puedes añadir la fecha de creación de la factura aquí si la tienes --}}
                 <small class="text-muted">Creado el: {{ $factura->created_at->format('d/m/Y H:i') }}</small>
             </div>
             <div class="card-body p-4">
@@ -31,18 +30,20 @@
                 <div class="row mb-4">
                     <div class="col-md-6 border-end border-secondary pe-4">
                         {{-- Detalles de tu empresa (ajusta según tu información) --}}
-                        <h5 class="text-warning mb-3">RACINGPART</h5>
-                        <p class="mb-1"><strong>Dirección:</strong> Danli, EL Paraiso</p>
+                        <h5 class="text-warning mb-3">TU EMPRESA (VENDEDOR)</h5>
+                        <p class="mb-1"><strong>RTN:</strong> 06021999123456</p>
+                        <p class="mb-1"><strong>Dirección:</strong> Tu dirección, Ciudad, País</p>
                         <p class="mb-1"><strong>Teléfono:</strong> +504 2763-3585</p>
-                        <p class="mb-1"><strong>Email:</strong> RacingPart@gmail.com</p>
+                        <p class="mb-1"><strong>Email:</strong> tuempresa@gmail.com</p>
                         <div class="d-flex align-items-center mt-3">
                             <img src="https://placehold.co/60x60/343a40/ffffff?text=LOGO" alt="Logo de la Empresa" class="me-3 rounded">
-                            <span class="fw-bold text-uppercase">RacingPart</span>
+                            <span class="fw-bold text-uppercase">Tu Empresa S.A.</span>
                         </div>
                     </div>
                     <div class="col-md-6 ps-4">
                         {{-- Detalles del cliente y factura --}}
                         <h5 class="text-warning mb-3">DETALLES DE LA FACTURA</h5>
+                        <p class="mb-1"><strong>CÓDIGO DE FACTURA:</strong> {{ $factura->codigo }}</p> {{-- Mostrar el código --}}
                         <p class="mb-1"><strong>FACTURA DE VENTA NO.:</strong> {{ $factura->id }}</p>
                         {{-- $factura->fecha ya es un objeto Carbon gracias al casting en el modelo --}}
                         <p class="mb-1"><strong>Fecha Comprobante:</strong> {{ $factura->fecha->format('d/m/Y') }}</p>
@@ -61,7 +62,7 @@
                         <thead>
                         <tr>
                             <th>N°</th>
-                            <th>Producto</th>
+                            <th>Descripción</th>
                             <th>Categoría</th>
                             <th>Precio Unitario (Lps)</th>
                             <th>Cantidad</th>
@@ -96,20 +97,10 @@
                                 <span>Importe Grabado (Lps):</span>
                                 <span>L. {{ number_format($factura->subtotal, 2) }}</span>
                             </p>
-                            {{-- Si tienes campos exentos/exonerados, añádelos aquí --}}
-                            {{-- <p class="d-flex justify-content-between mb-1">
-                                <span>Importe Exento (Lps):</span>
-                                <span>L. 0.00</span>
-                            </p>
-                            <p class="d-flex justify-content-between mb-1">
-                                <span>Importe Exonerado (Lps):</span>
-                                <span>L. 0.00</span>
-                            </p> --}}
                             <p class="d-flex justify-content-between fw-bold mb-1">
                                 <span>Subtotal (Lps):</span>
                                 <span>L. {{ number_format($factura->subtotal, 2) }}</span>
                             </p>
-                            {{-- Si tienes diferentes porcentajes de IVA, puedes mostrarlos --}}
                             <p class="d-flex justify-content-between mb-1">
                                 <span>IVA (Lps):</span>
                                 <span>L. {{ number_format($factura->iva, 2) }}</span>

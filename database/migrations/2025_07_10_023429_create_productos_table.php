@@ -1,22 +1,22 @@
 <?php
+
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     public function up(): void
     {
         Schema::create('productos', function (Blueprint $table) {
             $table->id();
-            $table->string('nombre');
+            $table->string('nombre', 50);
+            $table->string('marca', 50);
+            $table->string('modelo', 50);
+            $table->year('anio');
+            $table->string('categoria', 30);
             $table->text('descripcion')->nullable();
-            $table->string('marca');
-            $table->string('modelo');
-            $table->integer('anio'); // sin tilde
-            $table->decimal('precio', 10, 2);
-            $table->integer('stock');
-            $table->string('categoria', 50);
+            $table->decimal('precio', 10, 2); // ✅ Campo precio agregado
+            $table->integer('stock')->default(0);
             $table->timestamps();
         });
     }

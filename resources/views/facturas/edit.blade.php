@@ -1,11 +1,11 @@
 @extends('layouts.app')
 
-@section('title', 'Registrar Factura de Venta')
+@section('title', 'Editar Factura de Venta')
 
 @section('content')
     <div class="container py-5">
         <div class="table-container">
-            <h2 class="mb-4">Registrar nueva factura de venta</h2>
+            <h2 class="mb-4">Editar Factura de Venta #{{ $factura->codigo }}</h2>
 
             @if(session('success'))
                 <div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -24,20 +24,21 @@
             @if($errors->any())
                 <div class="alert alert-danger">
                     <ul class="mb-0">
-                        @foreach ($errors->all() as $error)
+                        @foreach($errors->all() as $error)
                             <li>{{ $error }}</li>
                         @endforeach
                     </ul>
                 </div>
             @endif
 
-            <form method="POST" action="{{ route('facturas.store') }}" id="formFactura" novalidate>
+            <form method="POST" action="{{ route('facturas.update', $factura->id) }}" id="formFactura" novalidate>
                 @csrf
+                @method('PUT') {{-- Importante para el método PUT --}}
 
                 <div class="mb-3">
                     <label for="cliente" class="form-label">Cliente</label>
                     <input type="text" name="cliente" id="cliente"
-                           value="{{ old('cliente') }}"
+                           value="{{ old('cliente', $factura->cliente) }}"
                            class="form-control bg-dark text-white @error('cliente') is-invalid @enderror"
                            placeholder="Nombre del cliente"
                            required
@@ -51,7 +52,7 @@
                 <div class="mb-3">
                     <label for="fecha" class="form-label">Fecha</label>
                     <input type="date" name="fecha" id="fecha"
-                           value="{{ old('fecha', date('Y-m-d')) }}"
+                           value="{{ old('fecha', $factura->fecha ? $factura->fecha->format('Y-m-d') : '') }}" {{-- Formatear la fecha de forma segura --}}
                            class="form-control bg-dark text-white @error('fecha') is-invalid @enderror"
                            required>
                     @error('fecha')
@@ -61,7 +62,7 @@
 
                 <div class="mb-3">
                     <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalProductos">
-                        + Agregar Producto
+                        + Agregar/Modificar Producto
                     </button>
                 </div>
 
@@ -69,7 +70,7 @@
                     <table class="table table-dark table-striped table-hover text-center align-middle" id="tablaProductos">
                         <thead>
                         <tr>
-                            <th>N°</th> {{-- Nueva columna para el número de producto --}}
+                            <th>N°</th>
                             <th>Producto</th>
                             <th>Cantidad</th>
                             <th>Precio Unitario (L.)</th>
@@ -83,7 +84,7 @@
                         </tbody>
                         <tfoot>
                         <tr>
-                            <th colspan="5" class="text-end">Total:</th> {{-- Colspan ajustado de 4 a 5 --}}
+                            <th colspan="5" class="text-end">Total:</th>
                             <th id="totalFactura">L. 0.00</th>
                             <th></th>
                         </tr>
@@ -91,48 +92,58 @@
                     </table>
                 </div>
 
-                {{-- Los errores de validación de detalles ahora se manejan a nivel de backend --}}
-                @error('detalles')
-                <div class="alert alert-danger mb-3">{{ $message }}</div>
-                @enderror
-                @error('detalles.*.producto_id')
-                <div class="alert alert-danger mb-3">{{ $message }}</div>
-                @enderror
-                @error('detalles.*.cantidad')
-                <div class="alert alert-danger mb-3">{{ $message }}</div>
-                @enderror
-                @error('detalles.*.precio_unitario')
-                <div class="alert alert-danger mb-3">{{ $message }}</div>
-                @enderror
-                @error('detalles.*.iva')
-                <div class="alert alert-danger mb-3">{{ $message }}</div>
-                @enderror
-
-
-                <button type="submit" class="btn btn-success">Guardar Factura</button>
+                <button type="submit" class="btn btn-success">Actualizar Factura</button>
                 <a href="{{ route('facturas.index') }}" class="btn btn-outline-light">Cancelar</a>
             </form>
         </div>
     </div>
 
-    {{-- Aquí incluimos el modal, que está en archivo aparte --}}
+    {{-- Aquí incluimos el modal de selección de productos --}}
     @include('facturas.modal-producto')
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            const productos = @json($productos); // Lista de productos para el modal de selección
             const form = document.getElementById('formFactura');
             const tbody = document.querySelector('#tablaProductos tbody');
             const totalFacturaEl = document.getElementById('totalFactura');
 
-            let productosSeleccionados = []; // Array para almacenar los productos con sus valores finales
+            // Inicializar productosSeleccionados con los detalles de la factura existente
+            // Usamos json_encode con flags para una serialización más robusta
+            const rawJsonString = '{!! json_encode($factura->detalles->map(function($detalle) {
+                return [
+                    'id' => $detalle->producto_id,
+                    // Usar el operador null-safe (?->) para acceder a propiedades de producto
+                    // y el operador de fusión de null (??) para un valor por defecto.
+                    'nombre' => $detalle->producto?->nombre ?? 'Producto Desconocido',
+                    'cantidad' => $detalle->cantidad,
+                    'precio_unitario' => $detalle->precio_unitario,
+                    'iva' => $detalle->iva,
+                    'subtotal' => $detalle->subtotal,
+                ];
+            })->toArray(), JSON_HEX_APOS | JSON_HEX_QUOT) !!}';
 
-            // Función para calcular subtotal
-            function calcularSubtotal(precio, cantidad, iva) {
-                return (parseFloat(precio) || 0) * (parseInt(cantidad) || 0) + (parseFloat(iva) || 0);
+            console.log("Raw JSON string from Blade:", rawJsonString);
+
+            let productosSeleccionados;
+            try {
+                productosSeleccionados = JSON.parse(rawJsonString);
+                console.log("Parsed productosSeleccionados:", productosSeleccionados);
+            } catch (e) {
+                console.error("Error parsing JSON for productosSeleccionados:", e);
+                console.error("Problematic JSON string:", rawJsonString);
+                productosSeleccionados = []; // Fallback a un array vacío para que la aplicación no se rompa
             }
 
-            // Función para actualizar el total general de la factura
+
+            // --- Lógica de la Tabla Principal de Factura ---
+
+            function calcularSubtotal(precio, cantidad, iva) {
+                const p = parseFloat(precio) || 0;
+                const c = parseInt(cantidad) || 0;
+                const i = parseFloat(iva) || 0;
+                return (p * c) + i;
+            }
+
             function actualizarTotal() {
                 let total = productosSeleccionados.reduce((acc, p) => {
                     return acc + calcularSubtotal(p.precio_unitario, p.cantidad, p.iva);
@@ -140,12 +151,12 @@
                 totalFacturaEl.textContent = 'L. ' + total.toFixed(2);
             }
 
-            // Función para renderizar la tabla principal (ahora solo muestra texto)
+            // Renderizar la tabla principal (solo muestra texto, no editable)
             function renderizarTabla() {
-                tbody.innerHTML = ''; // Limpiar la tabla
+                tbody.innerHTML = '';
 
                 if (productosSeleccionados.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="7">No hay productos seleccionados.</td></tr>`; // Colspan ajustado a 7
+                    tbody.innerHTML = `<tr><td colspan="7">No hay productos seleccionados.</td></tr>`;
                     actualizarTotal();
                     return;
                 }
@@ -155,22 +166,22 @@
                     const tr = document.createElement('tr');
 
                     tr.innerHTML = `
-                        <td>${index + 1}</td> {{-- Número de producto --}}
-                    <td>
-${p.nombre}
+                        <td>${index + 1}</td>
+                        <td>
+                            ${p.nombre}
                             <input type="hidden" name="detalles[${index}][producto_id]" value="${p.id}">
                         </td>
                         <td>
                             ${p.cantidad}
-                            <input type="hidden" name="detalles[${index}][cantidad]" value="${p.cantidad}" class="input-cantidad-${index}">
+                            <input type="hidden" name="detalles[${index}][cantidad]" value="${p.cantidad}">
                         </td>
                         <td>
                             L. ${p.precio_unitario.toFixed(2)}
-                            <input type="hidden" name="detalles[${index}][precio_unitario]" value="${p.precio_unitario}" class="input-precio-${index}">
+                            <input type="hidden" name="detalles[${index}][precio_unitario]" value="${p.precio_unitario}">
                         </td>
                         <td>
                             L. ${p.iva.toFixed(2)}
-                            <input type="hidden" name="detalles[${index}][iva]" value="${p.iva}" class="input-iva-${index}">
+                            <input type="hidden" name="detalles[${index}][iva]" value="${p.iva}">
                         </td>
                         <td>L. ${subtotal.toFixed(2)}</td>
                         <td>
@@ -182,7 +193,7 @@ ${p.nombre}
                 actualizarTotal();
             }
 
-            // Función para mostrar alertas personalizadas (reemplazo de alert())
+            // Función para mostrar alertas personalizadas
             function showAlert(message, type = 'danger') {
                 const alertDiv = document.createElement('div');
                 alertDiv.className = `alert alert-${type} alert-dismissible fade show mt-3`;
@@ -194,13 +205,13 @@ ${p.nombre}
 
             // Listener para el evento personalizado 'productSelected' desde modal-producto.blade.php
             document.addEventListener('productSelected', function(e) {
-                const selectedProduct = e.detail; // El producto con cantidad, precio, iva del modal
+                const selectedProduct = e.detail;
 
                 const yaAgregado = productosSeleccionados.some(p => p.id === selectedProduct.id);
 
                 if (!yaAgregado) {
                     productosSeleccionados.push(selectedProduct);
-                    renderizarTabla(); // Vuelve a renderizar la tabla principal
+                    renderizarTabla();
                 } else {
                     showAlert('El producto ya está agregado en la factura principal.', 'warning');
                 }
@@ -212,7 +223,7 @@ ${p.nombre}
                     const index = parseInt(e.target.dataset.index);
                     if (!isNaN(index) && index >= 0 && index < productosSeleccionados.length) {
                         productosSeleccionados.splice(index, 1);
-                        renderizarTabla(); // Re-renderiza la tabla después de eliminar
+                        renderizarTabla();
                     }
                 }
             });
@@ -231,7 +242,7 @@ ${p.nombre}
                     clienteInput.classList.remove('is-invalid');
                 }
 
-                // Validar campo Fecha (ya tiene required en HTML5, pero se puede añadir JS si se quiere customizar)
+                // Validar campo Fecha
                 const fechaInput = document.getElementById('fecha');
                 if (!fechaInput.value) {
                     e.preventDefault();
@@ -242,7 +253,6 @@ ${p.nombre}
                     fechaInput.classList.remove('is-invalid');
                 }
 
-
                 // Validar que haya al menos un producto seleccionado
                 if (productosSeleccionados.length === 0) {
                     e.preventDefault();
@@ -252,6 +262,9 @@ ${p.nombre}
 
                 // Si todas las validaciones pasan, el formulario se enviará
             });
+
+            // Renderizar la tabla con los productos de la factura al cargar la página
+            renderizarTabla();
         });
     </script>
 

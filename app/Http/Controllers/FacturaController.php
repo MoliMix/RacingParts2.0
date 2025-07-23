@@ -7,6 +7,7 @@ use App\Models\DetalleFacturaVenta; // Necesario para crear detalles
 use App\Models\Producto;           // Necesario para relacionar productos
 use Illuminate\Http\Request;       // ¡Importante para manejar las peticiones!
 use Illuminate\Support\Facades\DB; // Para transacciones de base de datos
+use Illuminate\Support\Str;        // Para generar cadenas aleatorias
 
 class FacturaController extends Controller
 {
@@ -35,8 +36,14 @@ class FacturaController extends Controller
     {
         // Selecciona solo los atributos necesarios de los productos para evitar problemas de serialización
         // Esto asegura que @json($productos) en la vista genere un JSON limpio y válido.
-        $productos = Producto::select('id', 'nombre', 'marca', 'modelo', 'anio', 'categoria', 'precio')->get();
-        return view('facturas.create', compact('productos'));
+        $productos = Producto::select('id', 'nombre', 'marca', 'modelo', 'anio', 'categoria', 'precio', 'stock')->get(); // Asegúrate de seleccionar 'stock'
+
+        // Sacas las marcas y categorías únicas de los productos para los filtros
+        $marcas = $productos->pluck('marca')->unique()->sort()->values();
+        $categorias = $productos->pluck('categoria')->unique()->sort()->values();
+
+        // Retornas la vista con todas las variables necesarias
+        return view('facturas.create', compact('productos', 'marcas', 'categorias'));
     }
 
     /**
@@ -58,54 +65,73 @@ class FacturaController extends Controller
 
         // Usar una transacción para asegurar que tanto la factura como sus detalles se guarden correctamente
         // Si algo falla, se revierte todo.
-        DB::transaction(function () use ($request) {
-            $subtotalFactura = 0; // Subtotal de la factura antes de IVA
-            $ivaTotalFactura = 0; // IVA total de la factura
-            $totalFactura = 0;   // Total final de la factura (Subtotal + IVA)
+        try {
+            DB::transaction(function () use ($request) {
+                $subtotalFactura = 0; // Subtotal de la factura antes de IVA
+                $ivaTotalFactura = 0; // IVA total de la factura
+                $totalFactura = 0;   // Total final de la factura (Subtotal + IVA)
 
-            // Recorrer los detalles para calcular subtotales y total
-            foreach ($request->detalles as $detalleData) {
-                $cantidad = $detalleData['cantidad'];
-                $precioUnitario = $detalleData['precio_unitario'];
-                $ivaDetalle = $detalleData['iva']; // Usar el IVA enviado desde el formulario para el detalle
+                // Primero validar stock para todos los productos antes de crear factura
+                foreach ($request->detalles as $detalleData) {
+                    $producto = Producto::find($detalleData['producto_id']);
+                    if (!$producto) {
+                        throw new \Exception("Producto con ID {$detalleData['producto_id']} no encontrado.");
+                    }
+                    if ($producto->stock < $detalleData['cantidad']) {
+                        throw new \Exception("Stock insuficiente para el producto: {$producto->nombre}. Stock disponible: {$producto->stock}, Cantidad solicitada: {$detalleData['cantidad']}");
+                    }
+                }
 
-                $subtotalDetalle = $cantidad * $precioUnitario; // Subtotal por detalle
-                $subtotalFactura += $subtotalDetalle;
+                // Generar un código único para la factura
+                // Formato: FAC-YYYYMMDD-XXXXXX (donde XXXXXX es una cadena aleatoria de 6 caracteres)
+                $codigoFactura = 'FAC-' . date('Ymd') . '-' . Str::random(6);
+                // Asegurar unicidad (aunque con fecha y random es muy improbable una colisión)
+                while (FacturaVenta::where('codigo', $codigoFactura)->exists()) {
+                    $codigoFactura = 'FAC-' . date('Ymd') . '-' . Str::random(6);
+                }
 
-                $ivaTotalFactura += $ivaDetalle; // Sumar el IVA de cada detalle
-            }
 
-            $totalFactura = $subtotalFactura + $ivaTotalFactura; // Calcular el total final
+                // Calcular totales
+                foreach ($request->detalles as $detalleData) {
+                    $subtotalFactura += $detalleData['cantidad'] * $detalleData['precio_unitario'];
+                    $ivaTotalFactura += $detalleData['iva'];
+                }
 
-            // Crear la factura principal
-            $factura = FacturaVenta::create([
-                'fecha' => $request->fecha,
-                'cliente' => $request->cliente,
-                'subtotal' => $subtotalFactura, // ¡Añadido el subtotal de la factura principal!
-                'iva' => $ivaTotalFactura,     // Añadimos el IVA total de la factura
-                'total' => $totalFactura,      // Usamos el campo 'total' según tu modelo
-            ]);
+                $totalFactura = $subtotalFactura + $ivaTotalFactura; // Calcular el total final
 
-            // Guardar los detalles de la factura
-            foreach ($request->detalles as $detalleData) {
-                $cantidad = $detalleData['cantidad'];
-                $precioUnitario = $detalleData['precio_unitario'];
-                $ivaDetalle = $detalleData['iva']; // Usar el IVA enviado desde el formulario para el detalle
-
-                $subtotalDetalle = $cantidad * $precioUnitario; // Subtotal por detalle
-
-                $factura->detalles()->create([
-                    'producto_id' => $detalleData['producto_id'],
-                    'cantidad' => $cantidad,
-                    'precio_unitario' => $precioUnitario,
-                    'iva' => $ivaDetalle, // IVA del detalle
-                    'subtotal' => $subtotalDetalle, // Subtotal del detalle
+                // Crear la factura principal
+                $factura = FacturaVenta::create([
+                    'codigo' => $codigoFactura, // Asignar el código generado
+                    'fecha' => $request->fecha,
+                    'cliente' => $request->cliente,
+                    'subtotal' => $subtotalFactura, // ¡Añadido el subtotal de la factura principal!
+                    'iva' => $ivaTotalFactura,     // Añadimos el IVA total de la factura
+                    'total' => $totalFactura,      // Usamos el campo 'total' según tu modelo
                 ]);
-            }
-        });
 
-        // Redirige a la lista de facturas con un mensaje de éxito
-        return redirect()->route('facturas.index')->with('success', 'Factura creada exitosamente.');
+                // Guardar los detalles de la factura
+                foreach ($request->detalles as $detalleData) {
+                    $cantidad = $detalleData['cantidad'];
+
+                    $factura->detalles()->create([
+                        'producto_id' => $detalleData['producto_id'],
+                        'cantidad' => $cantidad,
+                        'precio_unitario' => $detalleData['precio_unitario'],
+                        'iva' => $detalleData['iva'], // IVA del detalle
+                        'subtotal' => $cantidad * $detalleData['precio_unitario'], // Subtotal del detalle
+                    ]);
+
+                    $producto = Producto::find($detalleData['producto_id']);
+                    $producto->stock -= $cantidad;
+                    $producto->save();
+                }
+            });
+
+            // Redirige a la lista de facturas con un mensaje de éxito
+            return redirect()->route('facturas.index')->with('success', 'Factura creada exitosamente.');
+        } catch (\Exception $e) {
+            return redirect()->back()->withInput()->with('error', $e->getMessage());
+        }
     }
 
     /**
@@ -124,8 +150,16 @@ class FacturaController extends Controller
     public function edit(FacturaVenta $factura)
     {
         $factura->load('detalles.producto'); // Carga los detalles para el formulario
-        $productos = Producto::all(); // También necesitas la lista de productos
-        return view('facturas.edit', compact('factura', 'productos'));
+
+        // Obtener todos los productos para el modal de selección, incluyendo stock y precio
+        $productos = Producto::select('id', 'nombre', 'marca', 'modelo', 'anio', 'categoria', 'precio', 'stock')->get();
+
+        // Sacar las marcas y categorías únicas de todos los productos para los filtros del modal
+        $marcas = $productos->pluck('marca')->unique()->sort()->values();
+        $categorias = $productos->pluck('categoria')->unique()->sort()->values();
+
+        // Retornar la vista de edición con la factura, todos los productos, marcas y categorías
+        return view('facturas.edit', compact('factura', 'productos', 'marcas', 'categorias'));
     }
 
     /**
@@ -144,54 +178,74 @@ class FacturaController extends Controller
             'detalles.*.iva' => 'required|numeric|min:0', // Validar IVA del detalle
         ]);
 
-        DB::transaction(function () use ($request, $factura) {
-            $subtotalFactura = 0;
-            $ivaTotalFactura = 0;
-            $totalFactura = 0;
+        try { // Añadido try-catch para manejar excepciones de stock
+            DB::transaction(function () use ($request, $factura) {
+                // Restaurar stock de productos anteriores
+                foreach ($factura->detalles as $detalleAnterior) {
+                    $producto = Producto::find($detalleAnterior->producto_id);
+                    if ($producto) { // Asegurarse de que el producto exista antes de restaurar stock
+                        $producto->stock += $detalleAnterior->cantidad;
+                        $producto->save();
+                    }
+                }
 
-            foreach ($request->detalles as $detalleData) {
-                $cantidad = $detalleData['cantidad'];
-                $precioUnitario = $detalleData['precio_unitario'];
-                $ivaDetalle = $detalleData['iva'];
+                // Validar stock para nuevos detalles
+                foreach ($request->detalles as $detalleData) {
+                    $producto = Producto::find($detalleData['producto_id']);
+                    if (!$producto) {
+                        throw new \Exception("Producto con ID {$detalleData['producto_id']} no encontrado para la actualización.");
+                    }
+                    if ($producto->stock < $detalleData['cantidad']) {
+                        throw new \Exception("Stock insuficiente para el producto: {$producto->nombre}. Stock disponible: {$producto->stock}, Cantidad solicitada: {$detalleData['cantidad']}");
+                    }
+                }
 
-                $subtotalDetalle = $cantidad * $precioUnitario;
-                $subtotalFactura += $subtotalDetalle;
+                // Eliminar detalles anteriores
+                $factura->detalles()->delete();
 
-                $ivaTotalFactura += $ivaDetalle;
-            }
+                // Calcular totales nuevos
+                $subtotalFactura = 0;
+                $ivaTotalFactura = 0;
 
-            $totalFactura = $subtotalFactura + $ivaTotalFactura;
+                foreach ($request->detalles as $detalleData) {
+                    $subtotalFactura += $detalleData['cantidad'] * $detalleData['precio_unitario'];
+                    $ivaTotalFactura += $detalleData['iva'];
+                }
 
-            $factura->update([
-                'fecha' => $request->fecha,
-                'cliente' => $request->cliente,
-                'subtotal' => $subtotalFactura, // Actualizado el subtotal de la factura principal
-                'iva' => $ivaTotalFactura,
-                'total' => $totalFactura,
-            ]);
-
-            // Eliminar los detalles existentes y recrearlos (simplificado para este ejemplo)
-            // En una aplicación real, podrías querer comparar y actualizar solo los cambios.
-            $factura->detalles()->delete();
-
-            foreach ($request->detalles as $detalleData) {
-                $cantidad = $detalleData['cantidad'];
-                $precioUnitario = $detalleData['precio_unitario'];
-                $ivaDetalle = $detalleData['iva'];
-
-                $subtotalDetalle = $cantidad * $precioUnitario;
-
-                $factura->detalles()->create([
-                    'producto_id' => $detalleData['producto_id'],
-                    'cantidad' => $cantidad,
-                    'precio_unitario' => $precioUnitario,
-                    'iva' => $ivaDetalle,
-                    'subtotal' => $subtotalDetalle,
+                // Actualizar factura
+                $factura->update([
+                    // El código no se actualiza, ya que es un identificador único generado una vez
+                    'fecha' => $request->fecha,
+                    'cliente' => $request->cliente,
+                    'subtotal' => $subtotalFactura, // Actualizado el subtotal de la factura principal
+                    'iva' => $ivaTotalFactura,
+                    'total' => $subtotalFactura + $ivaTotalFactura,
                 ]);
-            }
-        });
 
-        return redirect()->route('facturas.index')->with('success', 'Factura actualizada exitosamente.');
+                // Guardar nuevos detalles y descontar stock
+                foreach ($request->detalles as $detalleData) {
+                    $cantidad = $detalleData['cantidad'];
+
+                    $factura->detalles()->create([
+                        'producto_id' => $detalleData['producto_id'],
+                        'cantidad' => $cantidad,
+                        'precio_unitario' => $detalleData['precio_unitario'],
+                        'iva' => $detalleData['iva'], // Usar $detalleData['iva'] en lugar de $ivaDetalle
+                        'subtotal' => $cantidad * $detalleData['precio_unitario'],
+                    ]);
+
+                    $producto = Producto::find($detalleData['producto_id']);
+                    if ($producto) { // Asegurarse de que el producto exista antes de descontar stock
+                        $producto->stock -= $cantidad;
+                        $producto->save();
+                    }
+                }
+            });
+
+            return redirect()->route('facturas.index')->with('success', 'Factura actualizada exitosamente.');
+        } catch (\Exception $e) {
+            return redirect()->back()->withInput()->with('error', $e->getMessage());
+        }
     }
 
     /**
@@ -200,11 +254,23 @@ class FacturaController extends Controller
      */
     public function destroy(FacturaVenta $factura)
     {
-        // Laravel maneja la eliminación en cascada si está configurada en la base de datos
-        // o puedes eliminar los detalles manualmente primero:
-        // $factura->detalles()->delete();
-        $factura->delete();
+        try { // Añadido try-catch para manejar excepciones
+            DB::transaction(function () use ($factura) {
+                // Restaurar stock antes de eliminar factura
+                foreach ($factura->detalles as $detalle) {
+                    $producto = Producto::find($detalle->producto_id);
+                    if ($producto) { // Asegurarse de que el producto exista antes de restaurar stock
+                        $producto->stock += $detalle->cantidad;
+                        $producto->save();
+                    }
+                }
 
-        return redirect()->route('facturas.index')->with('success', 'Factura eliminada exitosamente.');
+                $factura->delete();
+            });
+
+            return redirect()->route('facturas.index')->with('success', 'Factura eliminada exitosamente.');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Error al eliminar la factura: ' . $e->getMessage());
+        }
     }
 }
