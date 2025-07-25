@@ -51,3 +51,5 @@ Route::get('/clientes/menu', function () {
 
 Route::resource('clientes', controller: ClienteController::class);
 Route::resource('facturas', FacturaController::class)->except(['edit', 'update', 'destroy']);
+
+Route::get('/clientes/check-dni-uniqueness', [ClienteController::class, 'checkDniUniqueness'])->name('clientes.checkDniUniqueness');

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\FacturaVenta;
 use Illuminate\Http\Request;
 
 class FacturaVentaController extends Controller
@@ -19,6 +20,9 @@ class FacturaVentaController extends Controller
      */
     public function create()
     {
+        $productos = FacturaVenta::all();
+        return view('facturas.registrar', compact('productos'));
+    
         //
     }
 
@@ -62,4 +66,3 @@ class FacturaVentaController extends Controller
         //
     }
 }
-

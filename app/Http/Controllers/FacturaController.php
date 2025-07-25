@@ -35,7 +35,7 @@ class FacturaController extends Controller
     {
         // Selecciona solo los atributos necesarios de los productos para evitar problemas de serialización
         // Esto asegura que @json($productos) en la vista genere un JSON limpio y válido.
-        $productos = Producto::select('id', 'nombre', 'marca', 'modelo', 'anio', 'categoria', 'precio')->get();
+        $productos = Producto::select('id', 'nombre', 'marca', 'modelo', 'año', 'categoria', 'precio')->get();
         return view('facturas.create', compact('productos'));
     }
 

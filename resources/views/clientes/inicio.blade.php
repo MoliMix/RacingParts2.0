@@ -116,14 +116,14 @@
 </html>
                 </tbody>
             </table>
-        </div>
+            <hr>
+             <div class="row">
+                <div class="col-md-12">
+                    {{ $clientes->links('vendor.pagination.bootstrap-5') }}
 
-        {{-- Pagination --}}
-        @if (isset($cliente) && method_exists  ($cliente, 'links'))
-            <div class="d-flex justify-content-center mt-4 mb-4">
-                {{ $cliente->withQueryString()->links('vendor.pagination.bootstrap-5') }}
-            </div>
-        @endif
+             </div>
+
+       
 
         <div class="d-flex gap-2 align-items-center mt-3 mb-4">
             <a href="{{ route('clientes.menu') }}" class="btn btn-outline-light">Volver</a>

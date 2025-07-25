@@ -211,20 +211,21 @@
 
                             {{-- Dirección del Cliente --}}
                             <div class="mb-3 col-md-6">
+   <div class="mb-3">
     <label for="direccion_cliente" class="form-label">Dirección del Cliente:</label>
-    <input type="text"
+    <textarea
         class="form-control @error('direccion_cliente') is-invalid @enderror"
         id="direccion_cliente"
         name="direccion_cliente"
-        value="{{ old('direccion_cliente', $cliente->direccion_cliente ?? '') }}"
+        rows="3" {{-- Puedes ajustar el número de filas visibles --}}
+        maxlength="255"
+        placeholder="Ej: Col. Las Brisas, Calle Principal #123"
         required
-        maxlength="255" {{-- Changed from 80 to 255 for more space --}}
-        placeholder="Ej: Col. Las Brisas, Calle Principal #123" />
+    >{{ old('direccion_cliente', $cliente->direccion_cliente ?? '') }}</textarea>
     @error('direccion_cliente')
         <div class="invalid-feedback">{{ $message }}</div>
     @enderror
 </div>
-
                             <div class="mb-3 col-md-6">
     <label for="fecha_ingreso" class="form-label">Fecha de Ingreso:</label>
     <input
@@ -414,27 +415,44 @@
                     numeroTelefonoInput.classList.add('is-valid');
                 }
 
-                // Validar Correo Electrónico
-                const correoElectronicoInput = document.getElementById('correo_electronico');
-                const correoElectronico = correoElectronicoInput.value.trim();
-                const regexCorreo = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                if (correoElectronico.length === 0 || !regexCorreo.test(correoElectronico) || correoElectronico.length > 40) {
-                    correoElectronicoInput.classList.add('is-invalid');
-                    formIsValid = false;
-                } else {
-                    correoElectronicoInput.classList.add('is-valid');
-                }
+               // Validaciones para Correo Electrónico
+const correoElectronicoInput = document.getElementById('correo_electronico'); // Ensure this ID matches your HTML
+const correo = correoElectronicoInput.value.trim();
+const regexCorreo = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
-                // Validar Dirección del Cliente
-                const direccionClienteInput = document.getElementById('direccion_cliente');
-                const direccionCliente = direccionClienteInput.value.trim();
-                if (direccionCliente.length === 0 || direccionCliente.length > 80) {
-                    direccionClienteInput.classList.add('is-invalid');
-                    formIsValid = false;
-                } else {
-                    direccionClienteInput.classList.add('is-valid');
-                }
+if (correo.length === 0) {
+    showValidationError(correoElectronicoInput, 'El correo es requerido.', false);
+    formIsValid = false;
+} else if (!regexCorreo.test(correo) || correo.length > 30) {
+    showValidationError(correoElectronicoInput, 'Ingrese un correo válido (ej. usuario@dominio.com).', false);
+    formIsValid = false;
+} else {
+    // If validation passes, you might want to remove the 'is-invalid' class
+    // and potentially add an 'is-valid' class, depending on your styling.
+    correoElectronicoInput.classList.remove('is-invalid');
+    correoElectronicoInput.classList.add('is-valid'); // Or just remove invalid
+}
 
+               // Validar Dirección del Cliente
+const direccionClienteInput = document.getElementById('direccion_cliente');
+const direccionCliente = direccionClienteInput.value.trim();
+const direccionClienteError = document.getElementById('direccion_cliente_error'); // Asume que tienes un elemento para el mensaje de error
+
+if (direccionCliente.length === 0) {
+    direccionClienteInput.classList.add('is-invalid');
+    direccionClienteInput.classList.remove('is-valid');
+    direccionClienteError.textContent = 'La dirección del cliente no puede estar vacía.';
+    formIsValid = false;
+} else if (direccionCliente.length > 80) {
+    direccionClienteInput.classList.add('is-invalid');
+    direccionClienteInput.classList.remove('is-valid');
+    direccionClienteError.textContent = 'La dirección del cliente no debe exceder los 80 caracteres.';
+    formIsValid = false;
+} else {
+    direccionClienteInput.classList.remove('is-invalid');
+    direccionClienteInput.classList.add('is-valid');
+    direccionClienteError.textContent = ''; // Limpiar mensaje de error si es válido
+}
                 // Validar Sexo
                 const sexoInput = document.getElementById('sexo');
                 if (!sexoInput.value) {
